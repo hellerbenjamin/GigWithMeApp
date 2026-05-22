@@ -1,0 +1,39 @@
+@layer theme, base, primevue, components, utilities;
+
+@import 'tailwindcss';
+@import 'primeicons/primeicons.css';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Band booking brand palette — see docs/band-booking-color-palette.md.
+       These generate Tailwind utilities (bg-*, text-*, border-*, etc.). */
+
+    /* Primary brand */
+    --color-stage-indigo: #2a1a4a;
+    --color-amp-violet: #6c4fd8;
+
+    /* Accent */
+    --color-encore-coral: #ff6b5c;
+    --color-soundcheck-teal: #2dd4a8;
+
+    /* Neutrals */
+    --color-canvas: #faf8f5;
+    --color-surface: #edeae3;
+    --color-muted: #5f5e5a;
+    --color-ink: #1c1b23;
+
+    /* Status */
+    --color-confirmed: #2dd4a8;
+    --color-confirmed-text: #0f6e56;
+    --color-pending: #ef9f27;
+    --color-pending-text: #854f0b;
+    --color-cancelled: #e24b4a;
+    --color-cancelled-text: #a32d2d;
+}

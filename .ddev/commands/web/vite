@@ -1,0 +1,7 @@
+#!/bin/bash
+
+## Description: Start the Vite dev server (HMR via https://$DDEV_HOSTNAME:5173)
+## Usage: vite [flags]
+## Example: "ddev vite" or "ddev vite --force"
+
+npm run dev -- "$@"
