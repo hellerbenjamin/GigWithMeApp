@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Bands\BandController;
 use App\Http\Controllers\Bands\SetActiveBandController;
 use App\Http\Middleware\HasActiveBand;
 use Illuminate\Support\Facades\Route;
@@ -7,13 +8,12 @@ use Inertia\Inertia;
 
 Route::get('/', static fn () => Inertia::render('Welcome'));
 
-// Band creation is deferred; this is a placeholder so the switcher's "Create a
-// new band" link and the no-bands redirect have somewhere to land. It sits
-// outside the HasActiveBand group on purpose — a user with no bands must be
-// able to reach it without being bounced back here.
+// Band creation sits outside the HasActiveBand group on purpose — a user with
+// no bands must be able to reach it without being bounced back here. It's also
+// where the switcher's "Create a new band" link lands.
 Route::middleware('auth')->group(function () {
-    Route::get('/bands/create', static fn () => Inertia::render('Bands/Create'))
-        ->name('bands.create');
+    Route::get('/bands/create', [BandController::class, 'create'])->name('bands.create');
+    Route::post('/bands', [BandController::class, 'store'])->name('bands.store');
 });
 
 // activeBand and bands are shared globally by HandleInertiaRequests; the active
