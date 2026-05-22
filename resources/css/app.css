@@ -3,6 +3,11 @@
 @import 'tailwindcss';
 @import 'primeicons/primeicons.css';
 
+/* Drive `dark:` utilities off the `.dark` class on <html> (toggled by
+   useDarkMode + the inline bootstrap), instead of the v4 default of
+   prefers-color-scheme. Matches PrimeVue's darkModeSelector in app.js. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
