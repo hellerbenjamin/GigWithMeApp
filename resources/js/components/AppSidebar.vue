@@ -38,7 +38,7 @@ const primaryNav = [
         <!-- Brand -->
         <div class="flex items-center justify-between px-5 pb-2 pt-6">
             <Link href="/dashboard" class="inline-flex" @click="emit('close')">
-                <RoadieLogo class="h-7 text-canvas" variant="dark" />
+                <RoadieLogo class="text-canvas" style="height: 3.25rem" variant="dark" />
             </Link>
             <button
                 type="button"
