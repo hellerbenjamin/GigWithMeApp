@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Band;
+use App\Services\BandSessionService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -50,8 +52,55 @@ class HandleInertiaRequests extends Middleware
                 'warning' => fn () => $request->session()->get('warning'),
                 'info' => fn () => $request->session()->get('info'),
             ],
-            // TODO: add 'activeBand' once the BandSessionService / ActiveBand
-            // facade is ported (see docs/legacy-app-features.md §2).
+            // The active band plus the user's full band list power the
+            // BandSwitcher and every band-scoped screen. Resolved by the
+            // HasActiveBand middleware before this runs at response time.
+            'activeBand' => fn () => $this->presentBand(
+                app(BandSessionService::class)->band()
+            ),
+            'bands' => fn () => $this->userBands($request),
+        ];
+    }
+
+    /**
+     * The authenticated user's bands, shaped for the switcher.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function userBands(Request $request): array
+    {
+        $user = $request->user();
+
+        if (! $user) {
+            return [];
+        }
+
+        return $user->bands()
+            ->with('genres:id,name')
+            ->orderBy('bands.name')
+            ->get()
+            ->map(fn (Band $band) => $this->presentBand($band))
+            ->all();
+    }
+
+    /**
+     * Flatten a band to the switcher's shape: { id, name, genre, role }. Genre
+     * is a many-to-many here, so the names are joined into one label; role
+     * comes from the band_user pivot.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function presentBand(?Band $band): ?array
+    {
+        if (! $band) {
+            return null;
+        }
+
+        return [
+            'id' => $band->id,
+            'name' => $band->name,
+            'genre' => $band->genres->pluck('name')->join(', ') ?: null,
+            'role' => $band->pivot?->role,
         ];
     }
 }
