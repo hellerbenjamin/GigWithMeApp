@@ -14,6 +14,10 @@ Route::get('/', static fn () => Inertia::render('Welcome'));
 Route::middleware('auth')->group(function () {
     Route::get('/bands/create', [BandController::class, 'create'])->name('bands.create');
     Route::post('/bands', [BandController::class, 'store'])->name('bands.store');
+
+    // User-scoped (not tied to the active band) — placeholder for now.
+    Route::get('/settings', static fn () => Inertia::render('Settings/Index'))
+        ->name('settings.index');
 });
 
 // activeBand and bands are shared globally by HandleInertiaRequests; the active
@@ -37,6 +41,12 @@ Route::middleware(['auth', HasActiveBand::class])->group(function () {
 
     Route::post('/bands/{band}/set-active', SetActiveBandController::class)
         ->name('bands.set-active');
+
+    // Band-scoped feature areas — placeholders until their controllers exist.
+    Route::get('/gigs', static fn () => Inertia::render('Gigs/Index'))->name('gigs.index');
+    Route::get('/venues', static fn () => Inertia::render('Venues/Index'))->name('venues.index');
+    Route::get('/band-members', static fn () => Inertia::render('BandMembers/Index'))->name('band-members.index');
+    Route::get('/music', static fn () => Inertia::render('Music/Index'))->name('music.index');
 });
 
 require __DIR__.'/auth.php';
