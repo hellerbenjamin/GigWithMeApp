@@ -17,9 +17,11 @@
         "vite": "^8.0.0"
     },
     "dependencies": {
+        "@inertiajs/vue3": "^3.2.0",
         "@primeuix/themes": "^2.0.3",
         "primeicons": "^7.0.0",
         "primevue": "^4.5.5",
-        "vue": "^3.5.34"
+        "vue": "^3.5.34",
+        "ziggy-js": "^2.6.2"
     }
 }
