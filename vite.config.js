@@ -15,6 +15,12 @@ export default defineConfig({
                 bunny('Instrument Sans', {
                     weights: [400, 500, 600],
                 }),
+                // Display face for headings / the dashboard greeting. Picked for
+                // its characterful, slightly-irregular cut — distinctive without
+                // clashing with the rounded Fredoka logo wordmark.
+                bunny('Bricolage Grotesque', {
+                    weights: [500, 600, 700],
+                }),
             ],
         }),
         vue(),

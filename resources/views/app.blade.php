@@ -6,12 +6,26 @@
 
         <title inertia>{{ config('app.name', 'Band') }}</title>
 
+        {{-- Set the color scheme before paint so dark mode never flashes white.
+             Mirrors the logic in resources/js/composables/useDarkMode.js. --}}
+        <script>
+            (function () {
+                try {
+                    var stored = localStorage.getItem('roadie-theme');
+                    var dark = stored
+                        ? stored === 'dark'
+                        : window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    document.documentElement.classList.toggle('dark', dark);
+                } catch (e) {}
+            })();
+        </script>
+
         @fonts
         @routes
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @inertiaHead
     </head>
-    <body class="h-full antialiased bg-canvas text-ink">
+    <body class="h-full antialiased bg-canvas text-ink dark:bg-backstage dark:text-canvas">
         @inertia
     </body>
 </html>

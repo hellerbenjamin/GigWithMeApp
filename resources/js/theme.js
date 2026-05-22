@@ -41,6 +41,26 @@ export const BandPreset = definePreset(Aura, {
                     950: '#1c1b23', // Ink — primary text
                 },
             },
+            // Dark mode is built on Stage Indigo per docs/band-booking-color-palette.md
+            // ("invert the neutrals rather than rethinking the system"). The ramp
+            // runs light violet-tinted text (0–100) down to deep indigo grounds
+            // (800–950) so PrimeVue surfaces sit alongside the indigo chrome.
+            dark: {
+                surface: {
+                    0: '#ffffff',
+                    50: '#f5f3fb',
+                    100: '#e7e2f2',
+                    200: '#c8c0de',
+                    300: '#a79ec8',
+                    400: '#7d7399',
+                    500: '#5a5175',
+                    600: '#433c59',
+                    700: '#332d47',
+                    800: '#221b34', // Riser — cards, raised surfaces
+                    900: '#1b1530', // panels
+                    950: '#16121f', // Backstage — deepest ground
+                },
+            },
         },
     },
 });
