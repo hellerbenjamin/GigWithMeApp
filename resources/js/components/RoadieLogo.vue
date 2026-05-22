@@ -24,23 +24,23 @@ defineProps({
   <svg
     class="roadie-logo"
     :class="`roadie-logo--${variant}`"
-    viewBox="0 0 580 230"
+    viewBox="0 0 480 230"
     role="img"
     aria-label="Roadie"
   >
     <title>Roadie</title>
-    <!-- coiled patch cable plugging into a 1/4" jack -->
+    <!-- coiled patch cable: grows from the foot of the R, plugs into a 1/4" jack -->
     <path
       class="roadie-logo__cable"
-      d="M74 176 c6 -16 24 -16 30 0 c6 16 24 16 30 0 c6 -16 24 -16 30 0 C238 168 330 182 392 174"
+      d="M92 150 C78 176 60 196 88 196 q24 -20 48 0 q24 20 48 0 q24 -20 48 0 q24 20 48 0 C356 192 360 188 380 188"
       fill="none"
-      stroke-width="9"
+      stroke-width="11"
       stroke-linecap="round"
       stroke-linejoin="round"
     />
-    <rect class="roadie-logo__sleeve" x="388" y="161" width="40" height="26" rx="9" />
-    <rect class="roadie-logo__tip" x="432" y="164" width="26" height="20" rx="9" />
-    <text class="roadie-logo__word" x="46" y="150" font-size="130" font-weight="600" letter-spacing="-3">
+    <rect class="roadie-logo__sleeve" x="376" y="172" width="44" height="30" rx="11" />
+    <rect class="roadie-logo__tip" x="424" y="176" width="26" height="22" rx="9" />
+    <text class="roadie-logo__word" x="40" y="150" font-size="130" font-weight="600" letter-spacing="-3">
       Roadie
     </text>
   </svg>

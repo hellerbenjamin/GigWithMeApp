@@ -28,19 +28,18 @@
     padding:64px clamp(20px,6vw,96px) 120px;
   }
 
-  /* ---- the wordmark, restyled per-context via CSS vars ---- */
-  .roadie-logo{display:block;width:100%;height:auto;overflow:visible}
-  .roadie-logo .mc-word{fill:var(--word,var(--stage-indigo));font-family:'Fredoka',system-ui,sans-serif}
-  .roadie-logo .mc-cable{stroke:var(--cable,var(--amp-violet))}
-  .roadie-logo .mc-sleeve{fill:var(--cable,var(--amp-violet))}
-  .roadie-logo .mc-tip{fill:var(--tip,var(--encore-coral))}
+  /* ---- the wordmark, restyled per-context via CSS custom properties ----
+     Colors are driven by --c-* vars (not class selectors) because those
+     inherit across the <use> shadow boundary, where class rules do not. */
+  .roadie-logo{display:block;width:100%;height:auto;overflow:visible;
+    --c-word:var(--stage-indigo);--c-cable:var(--amp-violet);--c-tip:var(--encore-coral)}
 
   /* contexts */
-  .ctx-light{--word:var(--stage-indigo);--cable:var(--amp-violet);--tip:var(--encore-coral)}
-  .ctx-dark {--word:var(--canvas);--cable:var(--amp-violet-soft);--tip:var(--encore-coral)}
-  .ctx-violet{--word:#fff;--cable:#fff;--tip:var(--soundcheck-teal)}
-  .ctx-mono-dark{--word:var(--stage-indigo);--cable:var(--stage-indigo);--tip:var(--stage-indigo)}
-  .ctx-mono-light{--word:var(--canvas);--cable:var(--canvas);--tip:var(--canvas)}
+  .ctx-light{--c-word:var(--stage-indigo);--c-cable:var(--amp-violet);--c-tip:var(--encore-coral)}
+  .ctx-dark {--c-word:var(--canvas);--c-cable:var(--amp-violet-soft);--c-tip:var(--encore-coral)}
+  .ctx-violet{--c-word:#fff;--c-cable:#fff;--c-tip:var(--soundcheck-teal)}
+  .ctx-mono-dark{--c-word:var(--stage-indigo);--c-cable:var(--stage-indigo);--c-tip:var(--stage-indigo)}
+  .ctx-mono-light{--c-word:var(--canvas);--c-cable:var(--canvas);--c-tip:var(--canvas)}
 
   /* ---- page chrome ---- */
   header{max-width:880px;margin:0 auto 72px}
@@ -86,14 +85,16 @@
 
 <!-- ============ reusable mark (define once, <use> everywhere) ============ -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <symbol id="roadie-mark" viewBox="0 0 580 230">
-    <!-- coiled patch cable that plugs into a 1/4" jack -->
-    <path class="mc-cable" fill="none" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"
-          d="M74 176 c6 -16 24 -16 30 0 c6 16 24 16 30 0 c6 -16 24 -16 30 0 C238 168 330 182 392 174"/>
-    <rect class="mc-sleeve" x="388" y="161" width="40" height="26" rx="9"/>
-    <rect class="mc-tip" x="432" y="164" width="26" height="20" rx="9"/>
+  <symbol id="roadie-mark" viewBox="0 0 480 230">
+    <!-- coiled patch cable: grows from the foot of the R, plugs into a 1/4" jack -->
+    <path fill="none" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"
+          style="stroke:var(--c-cable,#6C4FD8)"
+          d="M92 150 C78 176 60 196 88 196 q24 -20 48 0 q24 20 48 0 q24 -20 48 0 q24 20 48 0 C356 192 360 188 380 188"/>
+    <rect x="376" y="172" width="44" height="30" rx="11" style="fill:var(--c-cable,#6C4FD8)"/>
+    <rect x="424" y="176" width="26" height="22" rx="9" style="fill:var(--c-tip,#FF6B5C)"/>
     <!-- wordmark -->
-    <text class="mc-word" x="46" y="150" font-size="130" font-weight="600" letter-spacing="-3">Roadie</text>
+    <text x="40" y="150" font-size="130" font-weight="600" letter-spacing="-3"
+          style="fill:var(--c-word,#2A1A4A);font-family:'Fredoka',system-ui,sans-serif">Roadie</text>
   </symbol>
 </svg>
 
@@ -110,13 +111,13 @@
   <div class="row">
     <div class="panel p-light">
       <span class="label">Light · primary</span>
-      <svg class="roadie-logo ctx-light" viewBox="0 0 580 230" role="img" aria-label="Roadie">
+      <svg class="roadie-logo ctx-light" viewBox="0 0 480 230" role="img" aria-label="Roadie">
         <use href="#roadie-mark"/>
       </svg>
     </div>
     <div class="panel p-dark">
       <span class="label">Dark</span>
-      <svg class="roadie-logo ctx-dark" viewBox="0 0 580 230" role="img" aria-label="Roadie">
+      <svg class="roadie-logo ctx-dark" viewBox="0 0 480 230" role="img" aria-label="Roadie">
         <use href="#roadie-mark"/>
       </svg>
     </div>
@@ -124,25 +125,25 @@
 
   <div class="panel p-violet">
     <span class="label">On Amp Violet</span>
-    <svg class="roadie-logo ctx-violet" viewBox="0 0 580 230" role="img" aria-label="Roadie">
+    <svg class="roadie-logo ctx-violet" viewBox="0 0 480 230" role="img" aria-label="Roadie">
       <use href="#roadie-mark"/>
     </svg>
   </div>
 
   <div class="sizes">
-    <svg class="roadie-logo ctx-light s1" viewBox="0 0 580 230" role="img" aria-label="Roadie"><use href="#roadie-mark"/></svg>
-    <svg class="roadie-logo ctx-light s2" viewBox="0 0 580 230" role="img" aria-label="Roadie"><use href="#roadie-mark"/></svg>
-    <svg class="roadie-logo ctx-light s3" viewBox="0 0 580 230" role="img" aria-label="Roadie"><use href="#roadie-mark"/></svg>
+    <svg class="roadie-logo ctx-light s1" viewBox="0 0 480 230" role="img" aria-label="Roadie"><use href="#roadie-mark"/></svg>
+    <svg class="roadie-logo ctx-light s2" viewBox="0 0 480 230" role="img" aria-label="Roadie"><use href="#roadie-mark"/></svg>
+    <svg class="roadie-logo ctx-light s3" viewBox="0 0 480 230" role="img" aria-label="Roadie"><use href="#roadie-mark"/></svg>
   </div>
 
   <div class="row">
     <div class="panel p-light">
       <span class="label">Mono · dark</span>
-      <svg class="roadie-logo ctx-mono-dark" viewBox="0 0 580 230" role="img" aria-label="Roadie"><use href="#roadie-mark"/></svg>
+      <svg class="roadie-logo ctx-mono-dark" viewBox="0 0 480 230" role="img" aria-label="Roadie"><use href="#roadie-mark"/></svg>
     </div>
     <div class="panel p-dark">
       <span class="label">Mono · reversed</span>
-      <svg class="roadie-logo ctx-mono-light" viewBox="0 0 580 230" role="img" aria-label="Roadie"><use href="#roadie-mark"/></svg>
+      <svg class="roadie-logo ctx-mono-light" viewBox="0 0 480 230" role="img" aria-label="Roadie"><use href="#roadie-mark"/></svg>
     </div>
   </div>
 
