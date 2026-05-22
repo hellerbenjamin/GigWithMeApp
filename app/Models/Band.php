@@ -11,24 +11,27 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'name',
-    'genre',
-    'website',
+    'slug',
+    'description',
+    'logo_path',
+    'hometown',
+    'founded_year',
+    'default_currency',
     'email',
-    'facebook',
-    'instagram',
-    'twitter',
-    'youtube',
-    'spotify',
-    'apple_music',
-    'bandcamp',
-    'soundcloud',
-    'tiktok',
-    'twitch',
-    'patreon',
+    'website',
+    'links',
 ])]
 class Band extends Model
 {
     use HasFactory;
+
+    protected function casts(): array
+    {
+        return [
+            'links' => 'array',
+            'founded_year' => 'integer',
+        ];
+    }
 
     public function users(): BelongsToMany
     {
@@ -45,6 +48,11 @@ class Band extends Model
     public function admins(): BelongsToMany
     {
         return $this->users()->wherePivot('role', BandUserRoleEnum::Admin->value);
+    }
+
+    public function genres(): BelongsToMany
+    {
+        return $this->belongsToMany(Genre::class, 'band_genre')->withTimestamps();
     }
 
     public function venues(): HasMany

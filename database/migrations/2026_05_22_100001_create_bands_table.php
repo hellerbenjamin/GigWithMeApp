@@ -11,20 +11,21 @@ return new class extends Migration
         Schema::create('bands', static function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('genre')->nullable();
-            $table->string('website')->nullable();
+            $table->string('slug')->unique();
+            $table->text('description')->nullable();
+            $table->string('logo_path')->nullable();
+            $table->string('hometown')->nullable();
+            $table->unsignedSmallInteger('founded_year')->nullable();
+            $table->char('default_currency', 3)->default('USD');
+
+            // Canonical contact details kept as first-class columns.
             $table->string('email')->nullable();
-            $table->string('facebook')->nullable();
-            $table->string('instagram')->nullable();
-            $table->string('twitter')->nullable();
-            $table->string('youtube')->nullable();
-            $table->string('spotify')->nullable();
-            $table->string('apple_music')->nullable();
-            $table->string('bandcamp')->nullable();
-            $table->string('soundcloud')->nullable();
-            $table->string('tiktok')->nullable();
-            $table->string('twitch')->nullable();
-            $table->string('patreon')->nullable();
+            $table->string('website')->nullable();
+
+            // Social / streaming platform links, keyed by platform, e.g.
+            // {"spotify": "https://…", "instagram": "https://…"}.
+            $table->json('links')->nullable();
+
             $table->timestamps();
         });
     }
