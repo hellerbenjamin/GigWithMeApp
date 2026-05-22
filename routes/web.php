@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Bands\BandController;
 use App\Http\Controllers\Bands\SetActiveBandController;
+use App\Http\Controllers\VenueController;
 use App\Http\Middleware\HasActiveBand;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -42,9 +43,12 @@ Route::middleware(['auth', HasActiveBand::class])->group(function () {
     Route::post('/bands/{band}/set-active', SetActiveBandController::class)
         ->name('bands.set-active');
 
+    Route::get('/venues', [VenueController::class, 'index'])->name('venues.index');
+    Route::get('/venues/create', [VenueController::class, 'create'])->name('venues.create');
+    Route::post('/venues', [VenueController::class, 'store'])->name('venues.store');
+
     // Band-scoped feature areas — placeholders until their controllers exist.
     Route::get('/gigs', static fn () => Inertia::render('Gigs/Index'))->name('gigs.index');
-    Route::get('/venues', static fn () => Inertia::render('Venues/Index'))->name('venues.index');
     Route::get('/band-members', static fn () => Inertia::render('BandMembers/Index'))->name('band-members.index');
     Route::get('/music', static fn () => Inertia::render('Music/Index'))->name('music.index');
 });
