@@ -1,6 +1,10 @@
-# Band Booking App
+# Roadie
 
-Laravel + Vue 3 + PrimeVue 4 (Aura preset) + Tailwind CSS 4, served via ddev.
+A band-booking / gig-management app. Laravel + Vue 3 + PrimeVue 4 (Aura preset)
++ Tailwind CSS 4, served via ddev.
+
+The name frames the app as the band's helper — a roadie hauls the gear and
+handles the logistics, so the product voice is "let Roadie handle the bookings."
 
 ## Conventions
 
