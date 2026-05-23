@@ -15,11 +15,14 @@ declare module 'vue' {
     Button: typeof import('primevue/button')['default']
     Card: typeof import('primevue/card')['default']
     Checkbox: typeof import('primevue/checkbox')['default']
+    DatePicker: typeof import('primevue/datepicker')['default']
     InputNumber: typeof import('primevue/inputnumber')['default']
     InputText: typeof import('primevue/inputtext')['default']
     Message: typeof import('primevue/message')['default']
     Password: typeof import('primevue/password')['default']
     Popover: typeof import('primevue/popover')['default']
+    Select: typeof import('primevue/select')['default']
+    Tag: typeof import('primevue/tag')['default']
     Textarea: typeof import('primevue/textarea')['default']
   }
 }
