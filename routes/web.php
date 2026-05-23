@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BandMembers\BandMemberController;
 use App\Http\Controllers\Bands\BandController;
 use App\Http\Controllers\Bands\SetActiveBandController;
 use App\Http\Controllers\Gigs\GigController;
@@ -52,8 +53,11 @@ Route::middleware(['auth', HasActiveBand::class])->group(function () {
     Route::get('/gigs/create', [GigController::class, 'create'])->name('gigs.create');
     Route::post('/gigs', [GigController::class, 'store'])->name('gigs.store');
 
+    Route::get('/band-members', [BandMemberController::class, 'index'])->name('band-members.index');
+    Route::get('/band-members/create', [BandMemberController::class, 'create'])->name('band-members.create');
+    Route::post('/band-members', [BandMemberController::class, 'store'])->name('band-members.store');
+
     // Band-scoped feature areas — placeholders until their controllers exist.
-    Route::get('/band-members', static fn () => Inertia::render('BandMembers/Index'))->name('band-members.index');
     Route::get('/music', static fn () => Inertia::render('Music/Index'))->name('music.index');
 });
 

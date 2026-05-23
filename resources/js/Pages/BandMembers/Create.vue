@@ -1,0 +1,112 @@
+<script>
+import { h } from 'vue';
+import AppLayout from '../../Layouts/AppLayout.vue';
+
+// Persistent layout with a per-page title for the topbar.
+export default {
+    layout: (_h, page) => h(AppLayout, { title: 'Add member' }, () => page),
+};
+</script>
+
+<script setup>
+import { Head, Link, useForm } from '@inertiajs/vue3';
+
+defineProps({
+    // Role options as { value, label }, from BandUserRoleEnum.
+    roles: { type: Array, default: () => [] },
+});
+
+const form = useForm({
+    name: '',
+    email: '',
+    role: 'member',
+});
+
+function submit() {
+    form
+        .transform((data) => ({
+            ...data,
+            name: data.name.trim(),
+            email: data.email.trim(),
+        }))
+        .post('/band-members');
+}
+</script>
+
+<template>
+    <Head title="Add a band member" />
+
+    <div class="mx-auto max-w-2xl">
+        <div class="mb-6">
+            <h2 class="font-display text-3xl font-bold tracking-tight">Add a band member</h2>
+            <p class="mt-1 text-sm text-ink/60 dark:text-canvas/55">
+                Add someone to the roster by email. If they already have a Roadie account
+                we'll link it up — otherwise we'll create one they can claim later.
+            </p>
+        </div>
+
+        <form
+            class="space-y-8 rounded-2xl border border-surface bg-white p-6 shadow-sm dark:border-white/10 dark:bg-riser sm:p-8"
+            @submit.prevent="submit"
+        >
+            <div class="space-y-1.5">
+                <label for="name" class="block text-sm font-medium">Name</label>
+                <InputText
+                    id="name"
+                    v-model="form.name"
+                    autofocus
+                    fluid
+                    placeholder="Jordan Reyes"
+                    :invalid="!!form.errors.name"
+                />
+                <small class="block text-muted dark:text-canvas/45">
+                    Used when we create a new account. If they're already on Roadie, their
+                    own account name stays.
+                </small>
+                <small v-if="form.errors.name" class="text-cancelled">{{ form.errors.name }}</small>
+            </div>
+
+            <div class="space-y-1.5">
+                <label for="email" class="block text-sm font-medium">Email</label>
+                <InputText
+                    id="email"
+                    v-model="form.email"
+                    type="email"
+                    fluid
+                    placeholder="jordan@band.com"
+                    :invalid="!!form.errors.email"
+                />
+                <small v-if="form.errors.email" class="text-cancelled">{{ form.errors.email }}</small>
+            </div>
+
+            <div class="space-y-1.5">
+                <label for="role" class="block text-sm font-medium">Role</label>
+                <Select
+                    input-id="role"
+                    v-model="form.role"
+                    :options="roles"
+                    option-label="label"
+                    option-value="value"
+                    fluid
+                    :invalid="!!form.errors.role"
+                />
+                <small class="block text-muted dark:text-canvas/45">
+                    Owners and admins can manage the roster and band settings; members can
+                    book and view.
+                </small>
+                <small v-if="form.errors.role" class="text-cancelled">{{ form.errors.role }}</small>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center justify-end gap-3 border-t border-surface pt-6 dark:border-white/10">
+                <Link
+                    href="/band-members"
+                    class="rounded-xl px-4 py-2.5 text-sm font-medium text-ink/70 transition-colors hover:bg-surface dark:text-canvas/70 dark:hover:bg-white/5"
+                >
+                    Cancel
+                </Link>
+                <Button type="submit" label="Add member" :loading="form.processing" />
+            </div>
+        </form>
+    </div>
+</template>
