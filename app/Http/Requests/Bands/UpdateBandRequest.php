@@ -3,9 +3,11 @@
 namespace App\Http\Requests\Bands;
 
 use App\Enums\BandUserRoleEnum;
+use App\Enums\GigBookingModeEnum;
 use App\Facades\ActiveBand;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateBandRequest extends FormRequest
 {
@@ -39,6 +41,7 @@ class UpdateBandRequest extends FormRequest
             'email' => ['nullable', 'email', 'max:255'],
             'description' => ['nullable', 'string', 'max:1000'],
             'default_currency' => ['required', 'string', 'size:3'],
+            'default_booking_mode' => ['required', Rule::enum(GigBookingModeEnum::class)],
         ];
     }
 

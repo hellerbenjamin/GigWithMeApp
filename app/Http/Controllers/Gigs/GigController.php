@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Gigs;
 
+use App\Enums\GigBookingModeEnum;
 use App\Enums\GigStatusEnum;
 use App\Enums\GigTypeEnum;
 use App\Facades\ActiveBand;
@@ -9,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Gigs\StoreGigRequest;
 use App\Http\Requests\Gigs\UpdateGigRequest;
 use App\Models\Gig;
+use App\Services\GigBookingService;
 use App\Services\GigService;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -39,7 +41,8 @@ class GigController extends Controller
             // optional, so an empty list still lets you book a TBD-venue gig.
             'venues' => $band->venues()->orderBy('name')->get(['id', 'name']),
             'types' => $this->options(GigTypeEnum::cases()),
-            'statuses' => $this->options(GigStatusEnum::cases()),
+            'bookingModes' => GigBookingModeEnum::options(),
+            'defaultBookingMode' => $band->default_booking_mode ?? GigBookingModeEnum::Auto->value,
             'defaultCurrency' => $band->default_currency ?? 'USD',
         ]);
     }
@@ -47,13 +50,19 @@ class GigController extends Controller
     /**
      * Persist a new gig for the active band.
      */
-    public function store(StoreGigRequest $request, GigService $gigs): RedirectResponse
+    public function store(StoreGigRequest $request, GigService $gigs, GigBookingService $booking): RedirectResponse
     {
         $gig = $gigs->createGig(ActiveBand::band(), $request->validated());
 
-        $label = $gig->name ?: $gig->date->format('M j, Y');
+        // Auto mode confirms + notifies here; poll mode leaves it pending.
+        $booking->applyMode($gig);
 
-        return to_route('gigs.index')->with('success', "{$label} is on the calendar.");
+        $label = $gig->name ?: $gig->date->format('M j, Y');
+        $message = $gig->status === GigStatusEnum::Confirmed
+            ? "{$label} is booked — the band's been notified."
+            : "{$label} is on the calendar.";
+
+        return to_route('gigs.index')->with('success', $message);
     }
 
     /**

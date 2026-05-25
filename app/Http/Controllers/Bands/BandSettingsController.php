@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Bands;
 
 use App\Enums\BandUserRoleEnum;
+use App\Enums\GigBookingModeEnum;
 use App\Facades\ActiveBand;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Bands\UpdateBandRequest;
@@ -37,9 +38,11 @@ class BandSettingsController extends Controller
                 'email' => $band->email,
                 'description' => $band->description,
                 'defaultCurrency' => $band->default_currency ?? 'USD',
+                'defaultBookingMode' => $band->default_booking_mode ?? GigBookingModeEnum::Auto->value,
             ],
             // Existing genres power the type-ahead; users can also coin new ones.
             'genreSuggestions' => Genre::orderBy('name')->pluck('name'),
+            'bookingModes' => GigBookingModeEnum::options(),
             'canManage' => $this->canManage(),
         ]);
     }

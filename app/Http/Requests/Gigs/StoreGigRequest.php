@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Gigs;
 
-use App\Enums\GigStatusEnum;
+use App\Enums\GigBookingModeEnum;
 use App\Enums\GigTypeEnum;
 use App\Facades\ActiveBand;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -34,7 +34,9 @@ class StoreGigRequest extends FormRequest
                 Rule::exists('venues', 'id')->where('band_id', ActiveBand::id()),
             ],
             'type' => ['required', Rule::enum(GigTypeEnum::class)],
-            'status' => ['required', Rule::enum(GigStatusEnum::class)],
+            // A new gig's status is set by its booking mode (auto -> confirmed,
+            // poll -> pending), so the form picks the mode, not the raw status.
+            'booking_mode' => ['required', Rule::enum(GigBookingModeEnum::class)],
             'name' => ['nullable', 'string', 'max:255'],
             'date' => ['required', 'date_format:Y-m-d'],
 

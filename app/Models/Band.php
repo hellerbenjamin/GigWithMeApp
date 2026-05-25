@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'hometown',
     'founded_year',
     'default_currency',
+    'default_booking_mode',
     'email',
     'website',
     'links',

@@ -9,7 +9,7 @@ export default {
 </script>
 
 <script setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const props = defineProps({
@@ -17,6 +17,8 @@ const props = defineProps({
     band: { type: Object, required: true },
     // Existing genres, offered as type-ahead suggestions.
     genreSuggestions: { type: Array, default: () => [] },
+    // Booking modes ({ value, label, description }) for the default-mode picker.
+    bookingModes: { type: Array, default: () => [] },
     // Whether the current user (owner/admin) may edit; members view read-only.
     canManage: { type: Boolean, default: false },
 });
@@ -30,10 +32,16 @@ const form = useForm({
     email: props.band.email ?? '',
     description: props.band.description ?? '',
     default_currency: props.band.defaultCurrency ?? 'USD',
+    default_booking_mode: props.band.defaultBookingMode ?? 'auto',
 });
 
 // Lead with the band's current currency so it's always selectable.
 const currencies = [...new Set([form.default_currency, 'USD', 'EUR', 'GBP', 'CAD', 'AUD'])];
+
+// Helper text under the default booking-mode picker, from the selected mode.
+const bookingModeHint = computed(
+    () => props.bookingModes.find((m) => m.value === form.default_booking_mode)?.description ?? '',
+);
 
 // Filter existing genres for the AutoComplete; users can also type a brand-new
 // genre and press Enter to add it as a chip (the server creates it on save).
@@ -243,6 +251,25 @@ function submit() {
                     Pre-fills the fee currency when you book a new gig.
                 </small>
                 <small v-if="form.errors.default_currency" class="text-cancelled">{{ form.errors.default_currency }}</small>
+            </div>
+
+            <!-- Default booking mode -->
+            <div class="space-y-1.5">
+                <label for="default_booking_mode" class="block text-sm font-medium">Default booking</label>
+                <Select
+                    input-id="default_booking_mode"
+                    v-model="form.default_booking_mode"
+                    :options="bookingModes"
+                    option-label="label"
+                    option-value="value"
+                    :disabled="!canManage"
+                    fluid
+                    :invalid="!!form.errors.default_booking_mode"
+                />
+                <small v-if="bookingModeHint" class="block text-muted dark:text-canvas/45">
+                    {{ bookingModeHint }} Pre-selected when you book a new gig.
+                </small>
+                <small v-if="form.errors.default_booking_mode" class="text-cancelled">{{ form.errors.default_booking_mode }}</small>
             </div>
 
             <!-- Description -->

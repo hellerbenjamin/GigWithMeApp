@@ -9,13 +9,16 @@ export default {
 </script>
 
 <script setup>
+import { computed } from 'vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const props = defineProps({
     // The active band's venues, for the picker. May be empty — venue is optional.
     venues: { type: Array, default: () => [] },
     types: { type: Array, default: () => [] },
-    statuses: { type: Array, default: () => [] },
+    // Booking modes ({ value, label, description }); how the gig gets confirmed.
+    bookingModes: { type: Array, default: () => [] },
+    defaultBookingMode: { type: String, default: 'auto' },
     defaultCurrency: { type: String, default: 'USD' },
 });
 
@@ -24,7 +27,7 @@ const currencies = [...new Set([props.defaultCurrency, 'USD', 'EUR', 'GBP', 'CAD
 
 const form = useForm({
     type: 'gig',
-    status: 'pending',
+    booking_mode: props.defaultBookingMode,
     name: '',
     venue_id: null,
     date: null, // Date object from the picker
@@ -37,6 +40,11 @@ const form = useForm({
     currency: props.defaultCurrency,
     notes: '',
 });
+
+// Helper text under the booking-mode picker, from the selected mode.
+const bookingModeHint = computed(
+    () => props.bookingModes.find((m) => m.value === form.booking_mode)?.description ?? '',
+);
 
 const pad = (n) => String(n).padStart(2, '0');
 
@@ -101,17 +109,20 @@ function submit() {
                     </div>
 
                     <div class="space-y-1.5">
-                        <label for="status" class="block text-sm font-medium">Status</label>
+                        <label for="booking_mode" class="block text-sm font-medium">Booking</label>
                         <Select
-                            input-id="status"
-                            v-model="form.status"
-                            :options="statuses"
+                            input-id="booking_mode"
+                            v-model="form.booking_mode"
+                            :options="bookingModes"
                             option-label="label"
                             option-value="value"
                             fluid
-                            :invalid="!!form.errors.status"
+                            :invalid="!!form.errors.booking_mode"
                         />
-                        <small v-if="form.errors.status" class="text-cancelled">{{ form.errors.status }}</small>
+                        <small v-if="bookingModeHint" class="block text-muted dark:text-canvas/45">
+                            {{ bookingModeHint }}
+                        </small>
+                        <small v-if="form.errors.booking_mode" class="text-cancelled">{{ form.errors.booking_mode }}</small>
                     </div>
                 </div>
 

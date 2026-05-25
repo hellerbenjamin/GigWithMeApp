@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\GigBookingModeEnum;
 use App\Enums\GigStatusEnum;
 use App\Enums\GigTypeEnum;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'venue_id',
     'type',
     'status',
+    'booking_mode',
     'name',
     'date',
     'load_in_time',
@@ -36,6 +38,7 @@ class Gig extends Model
     protected $attributes = [
         'type' => 'gig',
         'status' => 'pending',
+        'booking_mode' => 'auto',
         'currency' => 'USD',
     ];
 
@@ -46,6 +49,7 @@ class Gig extends Model
             'fee' => 'decimal:2',
             'type' => GigTypeEnum::class,
             'status' => GigStatusEnum::class,
+            'booking_mode' => GigBookingModeEnum::class,
         ];
     }
 
