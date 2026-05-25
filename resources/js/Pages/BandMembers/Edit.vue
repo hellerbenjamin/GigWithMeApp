@@ -4,23 +4,25 @@ import AppLayout from '../../Layouts/AppLayout.vue';
 
 // Persistent layout with a per-page title for the topbar.
 export default {
-    layout: (_h, page) => h(AppLayout, { title: 'Add member' }, () => page),
+    layout: (_h, page) => h(AppLayout, { title: 'Edit member' }, () => page),
 };
 </script>
 
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
-defineProps({
+const props = defineProps({
+    // The member being edited: { id, name, email, phoneNumber, role }.
+    member: { type: Object, required: true },
     // Role options as { value, label }, from BandUserRoleEnum.
     roles: { type: Array, default: () => [] },
 });
 
 const form = useForm({
-    name: '',
-    email: '',
-    phone_number: '',
-    role: 'member',
+    name: props.member.name ?? '',
+    email: props.member.email ?? '',
+    phone_number: props.member.phoneNumber ?? '',
+    role: props.member.role,
 });
 
 function submit() {
@@ -31,19 +33,19 @@ function submit() {
             email: data.email.trim(),
             phone_number: data.phone_number.trim(),
         }))
-        .post('/band-members');
+        .put(`/band-members/${props.member.id}`);
 }
 </script>
 
 <template>
-    <Head title="Add a band member" />
+    <Head title="Edit a band member" />
 
     <div class="mx-auto max-w-2xl">
         <div class="mb-6">
-            <h2 class="font-display text-3xl font-bold tracking-tight">Add a band member</h2>
+            <h2 class="font-display text-3xl font-bold tracking-tight">Edit band member</h2>
             <p class="mt-1 text-sm text-ink/60 dark:text-canvas/55">
-                Add someone to the roster by email. If they already have a Roadie account
-                we'll link it up — otherwise we'll create one they can claim later.
+                Update {{ member.name }}'s contact details and their role in the band. These
+                details are part of their Roadie account.
             </p>
         </div>
 
@@ -61,10 +63,6 @@ function submit() {
                     placeholder="Jordan Reyes"
                     :invalid="!!form.errors.name"
                 />
-                <small class="block text-muted dark:text-canvas/45">
-                    Used when we create a new account. If they're already on Roadie, their
-                    own account name stays.
-                </small>
                 <small v-if="form.errors.name" class="text-cancelled">{{ form.errors.name }}</small>
             </div>
 
@@ -78,6 +76,9 @@ function submit() {
                     placeholder="jordan@band.com"
                     :invalid="!!form.errors.email"
                 />
+                <small class="block text-muted dark:text-canvas/45">
+                    This is the email they sign in with. Changing it changes their login.
+                </small>
                 <small v-if="form.errors.email" class="text-cancelled">{{ form.errors.email }}</small>
             </div>
 
@@ -93,10 +94,6 @@ function submit() {
                     placeholder="(555) 123-4567"
                     :invalid="!!form.errors.phone_number"
                 />
-                <small class="block text-muted dark:text-canvas/45">
-                    Used when we create a new account. If they're already on Roadie, their
-                    own number stays.
-                </small>
                 <small v-if="form.errors.phone_number" class="text-cancelled">{{ form.errors.phone_number }}</small>
             </div>
 
@@ -126,7 +123,7 @@ function submit() {
                 >
                     Cancel
                 </Link>
-                <Button type="submit" label="Add member" :loading="form.processing" />
+                <Button type="submit" label="Save changes" :loading="form.processing" />
             </div>
         </form>
     </div>
