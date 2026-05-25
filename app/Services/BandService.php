@@ -44,6 +44,24 @@ class BandService
     }
 
     /**
+     * Update a band's details and its genre set. The slug is deliberately left
+     * alone on rename — it's a stable permalink, so changing the name doesn't
+     * move the band. Genres are fully synced, so passing [] clears them.
+     *
+     * @param  array<string, mixed>  $attributes  fillable band columns (no slug)
+     * @param  array<int, string>  $genres  genre names; created on demand
+     */
+    public function updateBand(Band $band, array $attributes, array $genres = []): Band
+    {
+        return DB::transaction(function () use ($band, $attributes, $genres): Band {
+            $band->fill($attributes)->save();
+            $band->genres()->sync($this->resolveGenreIds($genres));
+
+            return $band;
+        });
+    }
+
+    /**
      * A URL-safe slug for the name, suffixed (-2, -3, …) until it's unique.
      */
     private function uniqueSlug(string $name): string

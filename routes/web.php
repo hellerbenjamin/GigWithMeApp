@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BandMembers\BandMemberController;
 use App\Http\Controllers\Bands\BandController;
+use App\Http\Controllers\Bands\BandSettingsController;
 use App\Http\Controllers\Bands\SetActiveBandController;
 use App\Http\Controllers\Gigs\GigController;
 use App\Http\Controllers\VenueController;
@@ -17,10 +18,6 @@ Route::get('/', static fn () => Inertia::render('Welcome'));
 Route::middleware('auth')->group(function () {
     Route::get('/bands/create', [BandController::class, 'create'])->name('bands.create');
     Route::post('/bands', [BandController::class, 'store'])->name('bands.store');
-
-    // User-scoped (not tied to the active band) — placeholder for now.
-    Route::get('/settings', static fn () => Inertia::render('Settings/Index'))
-        ->name('settings.index');
 });
 
 // activeBand and bands are shared globally by HandleInertiaRequests; the active
@@ -60,6 +57,10 @@ Route::middleware(['auth', HasActiveBand::class])->group(function () {
     Route::get('/band-members/{user}/edit', [BandMemberController::class, 'edit'])->name('band-members.edit');
     Route::put('/band-members/{user}', [BandMemberController::class, 'update'])->name('band-members.update');
     Route::delete('/band-members/{user}', [BandMemberController::class, 'destroy'])->name('band-members.destroy');
+
+    // Band settings live with the active band, so they sit behind HasActiveBand.
+    Route::get('/settings', [BandSettingsController::class, 'edit'])->name('settings.index');
+    Route::put('/settings', [BandSettingsController::class, 'update'])->name('settings.update');
 
     // Band-scoped feature areas — placeholders until their controllers exist.
     Route::get('/music', static fn () => Inertia::render('Music/Index'))->name('music.index');
