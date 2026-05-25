@@ -40,7 +40,9 @@ class UpdateBandSettingsTest extends TestCase
                 ->where('band.name', $band->name)
                 ->where('band.genres', ['Dream Pop'])
                 ->where('canManage', true)
+                ->where('band.defaultBookingMode', 'auto')
                 ->has('genreSuggestions')
+                ->has('bookingModes')
             );
     }
 
@@ -57,6 +59,7 @@ class UpdateBandSettingsTest extends TestCase
             'email' => 'hello@velvethours.test',
             'description' => 'A moody five-piece.',
             'default_currency' => 'EUR',
+            'default_booking_mode' => 'poll',
         ])->assertRedirect('/settings')->assertSessionHas('success');
 
         $band->refresh();
@@ -64,6 +67,7 @@ class UpdateBandSettingsTest extends TestCase
         $this->assertSame('Portland, OR', $band->hometown);
         $this->assertSame(2019, $band->founded_year);
         $this->assertSame('EUR', $band->default_currency);
+        $this->assertSame('poll', $band->default_booking_mode);
         $this->assertEqualsCanonicalizing(
             ['Indie', 'Dream Pop'],
             $band->genres()->pluck('name')->all(),
@@ -78,6 +82,7 @@ class UpdateBandSettingsTest extends TestCase
         $this->actingAs($owner)->put('/settings', [
             'name' => 'A Completely Different Name',
             'default_currency' => 'USD',
+            'default_booking_mode' => 'auto',
         ])->assertRedirect('/settings');
 
         $this->assertSame($originalSlug, $band->fresh()->slug);
@@ -93,6 +98,7 @@ class UpdateBandSettingsTest extends TestCase
             'hometown' => null,
             'website' => null,
             'default_currency' => 'USD',
+            'default_booking_mode' => 'auto',
         ])->assertRedirect('/settings');
 
         $band->refresh();
@@ -109,6 +115,7 @@ class UpdateBandSettingsTest extends TestCase
             'name' => $band->name,
             'genres' => [],
             'default_currency' => 'USD',
+            'default_booking_mode' => 'auto',
         ])->assertRedirect('/settings');
 
         $this->assertCount(0, $band->fresh()->genres);

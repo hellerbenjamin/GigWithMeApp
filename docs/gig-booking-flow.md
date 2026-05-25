@@ -154,6 +154,8 @@ out of CRUD:
 
 ## Build phases
 
+> Status: Phase 1 ✅ and Phase 2 ✅ are built (and tested). Phases 3–4 remain.
+
 1. **Auto-confirm (flow 1) — smallest.** `GigBookingModeEnum`; `booking_mode` +
    `default_booking_mode` migrations; create-form select + band setting; wire
    `GigConfirmed` to dispatch on `auto` create. `GigBookingService::applyMode` +

@@ -5,12 +5,20 @@ use App\Http\Controllers\Bands\BandController;
 use App\Http\Controllers\Bands\BandSettingsController;
 use App\Http\Controllers\Bands\SetActiveBandController;
 use App\Http\Controllers\Gigs\GigController;
+use App\Http\Controllers\Rsvp\RsvpController;
 use App\Http\Controllers\VenueController;
 use App\Http\Middleware\HasActiveBand;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', static fn () => Inertia::render('Welcome'));
+
+// Magic-link gig RSVP — deliberately public (no auth/active-band): the token in
+// the URL is the authorization. Throttled since it's unauthenticated.
+Route::middleware('throttle:30,1')->group(function () {
+    Route::get('/rsvp/{token}', [RsvpController::class, 'show'])->name('rsvp.show');
+    Route::post('/rsvp/{token}', [RsvpController::class, 'update'])->name('rsvp.update');
+});
 
 // Band creation sits outside the HasActiveBand group on purpose — a user with
 // no bands must be able to reach it without being bounced back here. It's also

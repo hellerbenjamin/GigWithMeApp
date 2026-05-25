@@ -7,12 +7,22 @@ use App\Models\Gig;
 use App\Models\User;
 use App\Models\Venue;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class CreateGigTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Booking a gig can fire SMS notifications (auto-confirm / poll); keep
+        // them off the wire in tests.
+        Notification::fake();
+    }
 
     /**
      * @return array{0: User, 1: Band}
@@ -41,7 +51,8 @@ class CreateGigTest extends TestCase
                 ->has('venues', 1)
                 ->where('venues.0.name', 'The Echo Lounge')
                 ->has('types')
-                ->has('statuses')
+                ->has('bookingModes')
+                ->where('defaultBookingMode', 'auto')
             );
     }
 
@@ -52,7 +63,7 @@ class CreateGigTest extends TestCase
 
         $response = $this->actingAs($user)->post('/gigs', [
             'type' => 'gig',
-            'status' => 'confirmed',
+            'booking_mode' => 'auto',
             'name' => 'Friday Night Headline',
             'venue_id' => $venue->id,
             'date' => '2026-06-12',
@@ -80,7 +91,7 @@ class CreateGigTest extends TestCase
 
         $this->actingAs($user)->post('/gigs', [
             'type' => 'gig',
-            'status' => 'pending',
+            'booking_mode' => 'auto',
             'date' => '2026-07-01',
             'currency' => 'USD',
         ])->assertRedirect('/gigs');
@@ -110,7 +121,7 @@ class CreateGigTest extends TestCase
         $this->actingAs($user)
             ->post('/gigs', [
                 'type' => 'gig',
-                'status' => 'pending',
+                'booking_mode' => 'auto',
                 'date' => '2026-06-12',
                 'start_time' => '21:00',
                 'end_time' => '20:00',
@@ -129,7 +140,7 @@ class CreateGigTest extends TestCase
         $this->actingAs($user)
             ->post('/gigs', [
                 'type' => 'gig',
-                'status' => 'pending',
+                'booking_mode' => 'auto',
                 'date' => '2026-06-12',
                 'venue_id' => $otherVenue->id,
                 'currency' => 'USD',

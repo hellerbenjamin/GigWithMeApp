@@ -54,8 +54,9 @@ class GigController extends Controller
     {
         $gig = $gigs->createGig(ActiveBand::band(), $request->validated());
 
-        // Auto mode confirms + notifies here; poll mode leaves it pending.
-        $booking->applyMode($gig);
+        // Auto mode confirms + notifies; poll mode opens the poll (the creator
+        // is auto-marked available).
+        $booking->applyMode($gig, $request->user());
 
         $label = $gig->name ?: $gig->date->format('M j, Y');
         $message = $gig->status === GigStatusEnum::Confirmed

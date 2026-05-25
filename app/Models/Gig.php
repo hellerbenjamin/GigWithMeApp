@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'band_id',
@@ -50,6 +51,7 @@ class Gig extends Model
             'type' => GigTypeEnum::class,
             'status' => GigStatusEnum::class,
             'booking_mode' => GigBookingModeEnum::class,
+            'poll_closed_at' => 'datetime',
         ];
     }
 
@@ -61,5 +63,13 @@ class Gig extends Model
     public function venue(): BelongsTo
     {
         return $this->belongsTo(Venue::class);
+    }
+
+    /**
+     * Per-member poll replies. Only populated for poll-mode gigs.
+     */
+    public function memberResponses(): HasMany
+    {
+        return $this->hasMany(GigMemberResponse::class);
     }
 }

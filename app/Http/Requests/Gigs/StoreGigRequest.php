@@ -27,6 +27,23 @@ class StoreGigRequest extends FormRequest
     public function rules(): array
     {
         return [
+            ...$this->baseRules(),
+            // A new gig's status is set by its booking mode (auto -> confirmed,
+            // poll -> pending), so the create form picks the mode, not the raw
+            // status. Editing manages status directly — see UpdateGigRequest.
+            'booking_mode' => ['required', Rule::enum(GigBookingModeEnum::class)],
+        ];
+    }
+
+    /**
+     * Rules shared by creating and editing a gig. The booking mode (create) and
+     * the status (edit) are layered on top by each request's own rules().
+     *
+     * @return array<string, ValidationRule|array<mixed>|string>
+     */
+    protected function baseRules(): array
+    {
+        return [
             // Optional: a gig may have a TBD venue. When set, it must be one of
             // the active band's own venues — never another band's.
             'venue_id' => [
@@ -34,9 +51,6 @@ class StoreGigRequest extends FormRequest
                 Rule::exists('venues', 'id')->where('band_id', ActiveBand::id()),
             ],
             'type' => ['required', Rule::enum(GigTypeEnum::class)],
-            // A new gig's status is set by its booking mode (auto -> confirmed,
-            // poll -> pending), so the form picks the mode, not the raw status.
-            'booking_mode' => ['required', Rule::enum(GigBookingModeEnum::class)],
             'name' => ['nullable', 'string', 'max:255'],
             'date' => ['required', 'date_format:Y-m-d'],
 
