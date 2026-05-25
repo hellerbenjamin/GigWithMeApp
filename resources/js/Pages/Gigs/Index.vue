@@ -8,11 +8,37 @@ export default {
 </script>
 
 <script setup>
-import { Head, Link } from '@inertiajs/vue3';
+import { ref } from 'vue';
+import { Head, Link, router } from '@inertiajs/vue3';
 
 defineProps({
     gigs: { type: Array, default: () => [] },
 });
+
+// The gig queued for deletion — drives the confirmation dialog. Null when
+// nothing is pending.
+const pendingDeletion = ref(null);
+const deleting = ref(false);
+
+// A human label for the gig in the confirmation copy.
+function gigLabel(gig) {
+    return gig.name || (gig.type === 'gig' ? 'this gig' : gig.type);
+}
+
+function confirmDeletion() {
+    if (!pendingDeletion.value) {
+        return;
+    }
+
+    router.delete(`/gigs/${pendingDeletion.value.id}`, {
+        preserveScroll: true,
+        onStart: () => (deleting.value = true),
+        onFinish: () => {
+            deleting.value = false;
+            pendingDeletion.value = null;
+        },
+    });
+}
 
 // Parse the plain Y-m-d string as a local date (no timezone shift) for display.
 function gigDate(date) {
@@ -110,6 +136,16 @@ function formatFee(gig) {
                     {{ formatFee(gig) }}
                 </span>
             </div>
+
+            <!-- Remove -->
+            <button
+                type="button"
+                :aria-label="`Delete ${gigLabel(gig)}`"
+                class="grid size-8 shrink-0 place-items-center rounded-lg text-ink/40 transition-colors hover:bg-cancelled/10 hover:text-cancelled dark:text-canvas/40"
+                @click="pendingDeletion = gig"
+            >
+                <i class="pi pi-trash text-sm" />
+            </button>
         </li>
     </ul>
 
@@ -131,4 +167,23 @@ function formatFee(gig) {
             Book a gig
         </Link>
     </div>
+
+    <!-- Delete confirmation -->
+    <Dialog
+        :visible="!!pendingDeletion"
+        modal
+        dismissable-mask
+        header="Delete gig?"
+        :style="{ width: '26rem' }"
+        @update:visible="(open) => { if (!open) pendingDeletion = null; }"
+    >
+        <p class="text-sm text-ink/70 dark:text-canvas/65">
+            <span class="font-medium text-ink dark:text-canvas">{{ pendingDeletion ? gigLabel(pendingDeletion) : '' }}</span>
+            will be removed from the calendar. This can't be undone.
+        </p>
+        <template #footer>
+            <Button label="Cancel" text severity="secondary" :disabled="deleting" @click="pendingDeletion = null" />
+            <Button label="Delete" severity="danger" :loading="deleting" @click="confirmDeletion" />
+        </template>
+    </Dialog>
 </template>

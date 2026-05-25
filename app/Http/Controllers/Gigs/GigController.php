@@ -56,6 +56,22 @@ class GigController extends Controller
     }
 
     /**
+     * Remove a gig from the active band's calendar. Scoped to the active band so
+     * one band can never delete another's gig — an off-band id 404s rather than
+     * leaking its existence.
+     */
+    public function destroy(Gig $gig, GigService $gigs): RedirectResponse
+    {
+        abort_unless($gig->band_id === ActiveBand::id(), 404);
+
+        $label = $gig->name ?: $gig->date->format('M j, Y');
+
+        $gigs->deleteGig($gig);
+
+        return to_route('gigs.index')->with('success', "{$label} was removed from the calendar.");
+    }
+
+    /**
      * Flatten a gig to the shape the calendar/list needs. Date is sent as a
      * plain Y-m-d string so the client formats it without a timezone shift.
      *

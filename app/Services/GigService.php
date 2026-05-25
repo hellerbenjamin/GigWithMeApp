@@ -39,4 +39,13 @@ class GigService
     {
         return $band->gigs()->create($attributes);
     }
+
+    /**
+     * Remove a gig from the calendar. Callers must have confirmed the gig
+     * belongs to the acting band (see {@see \App\Http\Controllers\Gigs\GigController::destroy}).
+     */
+    public function deleteGig(Gig $gig): void
+    {
+        $gig->delete();
+    }
 }
