@@ -142,7 +142,7 @@ function submit() {
                         :invalid="!!form.errors.name"
                     />
                     <small class="block text-muted dark:text-canvas/45">
-                        Leave blank and Roadie will refer to it by date.
+                        Leave blank and we'll refer to it by date.
                     </small>
                     <small v-if="form.errors.name" class="text-cancelled">{{ form.errors.name }}</small>
                 </div>

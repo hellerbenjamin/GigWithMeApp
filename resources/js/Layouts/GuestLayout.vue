@@ -1,5 +1,5 @@
 <script setup>
-import RoadieLogo from '../components/RoadieLogo.vue';
+import GigWithMeLogo from '../components/GigWithMeLogo.vue';
 import { useDarkMode } from '../composables/useDarkMode';
 
 defineProps({
@@ -15,7 +15,7 @@ const { isDark } = useDarkMode();
     <div class="grid min-h-full place-items-center px-4 py-12">
         <div class="w-full max-w-md">
             <div class="mb-8 flex flex-col items-center text-center">
-                <RoadieLogo
+                <GigWithMeLogo
                     class="h-9 text-stage-indigo dark:text-canvas"
                     :variant="isDark ? 'dark' : 'light'"
                 />

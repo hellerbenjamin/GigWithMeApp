@@ -2,12 +2,12 @@
 import { h } from 'vue';
 import GuestLayout from '../../Layouts/GuestLayout.vue';
 
-// Persistent guest layout — centered card with the Roadie wordmark.
+// Persistent guest layout — centered card with the GigWithMe wordmark.
 export default {
     layout: (_h, page) =>
         h(
             GuestLayout,
-            { title: 'Welcome back', subtitle: 'Log in and let Roadie handle the bookings.' },
+            { title: 'Welcome back', subtitle: "Log in and get the band's dates on the books." },
             () => page,
         ),
 };
@@ -78,7 +78,7 @@ function submit() {
         <Button type="submit" label="Log in" fluid :loading="form.processing" />
 
         <p class="text-center text-sm text-muted dark:text-canvas/60">
-            New to Roadie?
+            New to GigWithMe?
             <Link href="/register" class="font-medium text-amp-violet hover:underline">
                 Create an account
             </Link>

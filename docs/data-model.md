@@ -1,4 +1,4 @@
-# Roadie — Data Model
+# GigWithMe — Data Model
 
 The data layer recycled from the original project (`git@github.com:hellerbenjamin/band.git`). It models a **band-booking / gig-management** app: users belong to bands, bands own venues and book gigs at them.
 

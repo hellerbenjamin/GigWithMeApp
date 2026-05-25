@@ -2,7 +2,7 @@
 import { h } from 'vue';
 import GuestLayout from '../../Layouts/GuestLayout.vue';
 
-// Reuse the centered guest card + Roadie wordmark. This page is reached via a
+// Reuse the centered guest card + GigWithMe wordmark. This page is reached via a
 // magic link by someone who may not be logged in, so it must not use AppLayout.
 export default {
     layout: (_h, page) =>

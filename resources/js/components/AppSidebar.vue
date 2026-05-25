@@ -1,6 +1,6 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
-import RoadieLogo from './RoadieLogo.vue';
+import GigWithMeLogo from './GigWithMeLogo.vue';
 import BandSwitcher from './BandSwitcher.vue';
 import NavLink from './NavLink.vue';
 
@@ -38,7 +38,7 @@ const primaryNav = [
         <!-- Brand -->
         <div class="flex items-center justify-between px-5 pb-2 pt-6">
             <Link href="/dashboard" class="inline-flex" @click="emit('close')">
-                <RoadieLogo class="text-canvas" style="height: 3.25rem" variant="dark" />
+                <GigWithMeLogo class="text-canvas" style="height: 3.25rem" variant="dark" />
             </Link>
             <button
                 type="button"

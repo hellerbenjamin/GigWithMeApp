@@ -45,7 +45,7 @@ function submit() {
             <h2 class="font-display text-3xl font-bold tracking-tight">Edit band member</h2>
             <p class="mt-1 text-sm text-ink/60 dark:text-canvas/55">
                 Update {{ member.name }}'s contact details and their role in the band. These
-                details are part of their Roadie account.
+                details are part of their GigWithMe account.
             </p>
         </div>
 

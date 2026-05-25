@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 190" role="img" aria-label="GigWithMe">
+  <title>GigWithMe</title>
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600&amp;display=swap');
+      .word{font-family:'Fredoka','Baloo 2',system-ui,sans-serif;font-weight:600;font-size:140px;letter-spacing:-4px;fill:#2A1A4A}
+    </style>
+  </defs>
+  <text class="word" x="8" y="148">GigWithMe</text>
+</svg>

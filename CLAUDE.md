@@ -1,10 +1,16 @@
-# Roadie
+# GigWithMe
 
 A band-booking / gig-management app. Laravel + Vue 3 + PrimeVue 4 (Aura preset)
 + Tailwind CSS 4, served via ddev.
 
-The name frames the app as the band's helper — a roadie hauls the gear and
-handles the logistics, so the product voice is "let Roadie handle the bookings."
+The name is an invitation — *gig with me* — so the product voice is warm and
+first-person: GigWithMe helps a band rally its people and keep its dates on the
+books. The marketing site lives at **gigwith.me**; the app itself is
+**gigwithme.app** (SMS/booking links point at the app domain). The wordmark
+renders as one word, "GigWithMe".
+
+Note: "roadie" still exists in the domain as a band-member *role* (crew) — that
+is not the app name and should stay.
 
 ## Conventions
 

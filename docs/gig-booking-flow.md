@@ -112,7 +112,7 @@ out of CRUD:
 ## Notifications
 
 - `GigPollOpened` (new) → each member, SMS with the magic link:
-  *"Roadie: can you play {where} on {when}? {link}"*
+  *"{band}: can you play {where} on {when}? {link}"*
 - `GigConfirmed` (exists, currently never dispatched) → wire it up. Fires on
   auto-confirm (flow 1) **and** poll success.
 - `GigPollNeedsAttention` (new) → admins/owner:
@@ -154,22 +154,43 @@ out of CRUD:
 
 ## Build phases
 
-> Status: Phase 1 ✅ and Phase 2 ✅ are built (and tested). Phases 3–4 remain.
+> Status: Phase 1 ✅ done. Phase 2 🟡 **core done** (responses, seeding, magic-link
+> RSVP, evaluate → confirm / needs-attention, both SMS notifications, tests) —
+> see "Next steps" for the Phase 2 work still outstanding. Phases 3–4 not started.
 
-1. **Auto-confirm (flow 1) — smallest.** `GigBookingModeEnum`; `booking_mode` +
+1. **Auto-confirm (flow 1) — smallest.** ✅ `GigBookingModeEnum`; `booking_mode` +
    `default_booking_mode` migrations; create-form select + band setting; wire
    `GigConfirmed` to dispatch on `auto` create. `GigBookingService::applyMode` +
    `confirm`.
-2. **Poll (flow 2).** `gig_member_responses` migration + model; seed on `poll`
-   create; `GigPollOpened`; `RsvpController` + magic-link routes/page;
-   `recordResponse` + `evaluatePoll`; `GigPollNeedsAttention`; admin review UI;
-   re-poll + membership-change handling.
+2. **Poll (flow 2).** 🟡 Done: `gig_member_responses` migration + model; seed on
+   `poll` create; `GigPollOpened`; `RsvpController` + magic-link routes/page;
+   `recordResponse` + `evaluatePoll`; `GigPollNeedsAttention`. **Not yet done —
+   see Next steps:** admin review UI, re-poll, membership-change handling.
 3. **RCS enhancement (later).** Custom Twilio channel via the Content API
    (quick-reply actions) + inbound webhook mapping the button payload (the
    `token`) into `recordResponse(channel: 'rcs')`. Gated on RBM agent
    verification; SMS magic link remains the fallback.
 4. **Advance availability (flow 3, later).** `member_availability` table +
    calendar UI; conflict warning at gig creation; pre-fill poll responses.
+
+## Next steps (outstanding)
+
+Captured from the build so far — the gaps I flagged, in rough priority order:
+
+1. **Admin poll UI (finishes Phase 2).** The needs-attention path currently only
+   fires an SMS; there's no in-app surface. Add to the gig list/detail:
+   - poll progress for `poll` gigs (e.g. `4/5 in`, per-member chips by
+     `GigResponseStatusEnum::severity()`);
+   - for owners/admins on a closed-but-unconfirmed poll: **Confirm anyway**
+     (→ `GigBookingService::confirm`) and **Re-poll** actions.
+2. **Re-poll + membership changes (finishes Phase 2).**
+   - Editing a poll gig's **date** offers Re-poll: reset responses to `pending`,
+     clear `poll_closed_at`, resend `GigPollOpened` (decided: always offer).
+   - Member **added** mid-poll → add a `pending` response; member **removed** →
+     drop their response and re-`evaluatePoll` (a removal can complete the poll).
+3. **Phase 3 — RCS** quick-reply channel (see RCS notes below).
+4. **Phase 4 — advance availability** (flow 3): `member_availability` table +
+   calendar, conflict warning at creation, pre-fill poll responses.
 
 ## RCS notes (for phase 3)
 

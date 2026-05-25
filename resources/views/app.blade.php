@@ -11,7 +11,7 @@
         <script>
             (function () {
                 try {
-                    var stored = localStorage.getItem('roadie-theme');
+                    var stored = localStorage.getItem('gigwithme-theme');
                     var dark = stored
                         ? stored === 'dark'
                         : window.matchMedia('(prefers-color-scheme: dark)').matches;

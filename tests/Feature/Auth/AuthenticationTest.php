@@ -24,14 +24,14 @@ class AuthenticationTest extends TestCase
     {
         $response = $this->post('/register', [
             'name' => 'Casey Rivera',
-            'email' => 'casey@roadie.test',
+            'email' => 'casey@gigwithme.test',
             'password' => 'password-123',
             'password_confirmation' => 'password-123',
         ]);
 
         $this->assertAuthenticated();
         $response->assertRedirect('/dashboard');
-        $this->assertDatabaseHas('users', ['email' => 'casey@roadie.test']);
+        $this->assertDatabaseHas('users', ['email' => 'casey@gigwithme.test']);
     }
 
     public function test_users_can_authenticate_with_valid_credentials(): void

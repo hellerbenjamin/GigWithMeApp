@@ -42,7 +42,7 @@ function submit() {
         <div class="mb-6">
             <h2 class="font-display text-3xl font-bold tracking-tight">Add a band member</h2>
             <p class="mt-1 text-sm text-ink/60 dark:text-canvas/55">
-                Add someone to the roster by email. If they already have a Roadie account
+                Add someone to the roster by email. If they already have a GigWithMe account
                 we'll link it up — otherwise we'll create one they can claim later.
             </p>
         </div>
@@ -62,7 +62,7 @@ function submit() {
                     :invalid="!!form.errors.name"
                 />
                 <small class="block text-muted dark:text-canvas/45">
-                    Used when we create a new account. If they're already on Roadie, their
+                    Used when we create a new account. If they're already on GigWithMe, their
                     own account name stays.
                 </small>
                 <small v-if="form.errors.name" class="text-cancelled">{{ form.errors.name }}</small>
@@ -94,7 +94,7 @@ function submit() {
                     :invalid="!!form.errors.phone_number"
                 />
                 <small class="block text-muted dark:text-canvas/45">
-                    Used when we create a new account. If they're already on Roadie, their
+                    Used when we create a new account. If they're already on GigWithMe, their
                     own number stays.
                 </small>
                 <small v-if="form.errors.phone_number" class="text-cancelled">{{ form.errors.phone_number }}</small>

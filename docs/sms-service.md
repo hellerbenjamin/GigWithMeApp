@@ -1,6 +1,6 @@
 # SMS service
 
-Roadie sends low-volume transactional texts — gig confirmations and reminders
+GigWithMe sends low-volume transactional texts — gig confirmations and reminders
 to band members and venue contacts. Phone numbers live on `users.phone_number`
 and venue `contact_phone`.
 

@@ -177,7 +177,7 @@ function formatFee(gig) {
         <div>
             <h2 class="font-display text-3xl font-bold tracking-tight">Gigs</h2>
             <p class="mt-1 text-sm text-ink/60 dark:text-canvas/55">
-                Every show, rehearsal, and date on the books — Roadie keeps the schedule
+                Every show, rehearsal, and date on the books — GigWithMe keeps the schedule
                 straight.
             </p>
         </div>

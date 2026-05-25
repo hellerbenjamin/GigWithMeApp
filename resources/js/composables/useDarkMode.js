@@ -4,7 +4,7 @@ import { ref, computed } from 'vue';
 // that imports this module (the ref lives at module scope). The initial value
 // is read from the class the inline bootstrap in app.blade.php already set, so
 // the toggle starts in sync and there's no flash on load.
-const STORAGE_KEY = 'roadie-theme';
+const STORAGE_KEY = 'gigwithme-theme';
 
 const isDark = ref(
     typeof document !== 'undefined' &&

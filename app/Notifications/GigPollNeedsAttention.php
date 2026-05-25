@@ -30,13 +30,13 @@ class GigPollNeedsAttention extends Notification implements ShouldQueue
 
     public function toTwilio(object $notifiable): TwilioSmsMessage
     {
-        $gig = $this->gig->loadMissing('venue');
+        $gig = $this->gig->loadMissing('venue', 'band');
 
         $where = $gig->venue?->name ?? ($gig->name ?: 'a gig');
         $when = $gig->date->format('D, M j');
         $link = route('gigs.edit', $gig);
 
         return (new TwilioSmsMessage)
-            ->content("Roadie: the band replied about {$where} on {$when}, but not everyone can make it. Your call — {$link}");
+            ->content("{$gig->band->name}: the band replied about {$where} on {$when}, but not everyone can make it. Your call — {$link}");
     }
 }

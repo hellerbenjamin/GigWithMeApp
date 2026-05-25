@@ -37,6 +37,6 @@ class GigPollOpened extends Notification implements ShouldQueue
         $link = route('rsvp.show', $this->response->token);
 
         return (new TwilioSmsMessage)
-            ->content("Roadie: can {$gig->band->name} count on you for {$where} on {$when}? Tap to reply — {$link}");
+            ->content("{$gig->band->name}: can you make {$where} on {$when}? Tap to reply — {$link}");
     }
 }

@@ -1,4 +1,4 @@
-# Roadie — Color Palette
+# GigWithMe — Color Palette
 
 A stage-and-lighting inspired palette for a band booking management app. Deep indigo anchors the interface, brighter violet handles interaction, coral drives key actions, and teal signals availability. Warm off-white neutrals keep the system feeling creative rather than corporate.
 

@@ -83,9 +83,9 @@ const roleStyles = {
         <li
             v-for="member in members"
             :key="member.id"
-            class="flex items-center gap-4 rounded-2xl border border-surface bg-white p-5 shadow-sm transition-shadow hover:shadow-md dark:border-white/10 dark:bg-riser"
+            class="flex items-start gap-4 rounded-2xl border border-surface bg-white p-5 shadow-sm transition-shadow hover:shadow-md dark:border-white/10 dark:bg-riser"
         >
-            <span class="grid size-11 shrink-0 place-items-center rounded-full bg-amp-violet/15 font-semibold text-amp-violet">
+            <span class="mt-0.5 grid size-11 shrink-0 place-items-center rounded-full bg-amp-violet/15 font-semibold text-amp-violet">
                 {{ initials(member.name) }}
             </span>
             <div class="min-w-0 flex-1">
@@ -103,13 +103,14 @@ const roleStyles = {
                     {{ member.phoneNumber }}
                 </a>
             </div>
-            <span
-                class="shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold"
-                :class="roleStyles[member.role] ?? roleStyles.member"
-            >
-                {{ member.roleLabel }}
-            </span>
-            <div v-if="canManage" class="flex shrink-0 items-center gap-0.5">
+            <div class="flex shrink-0 flex-col items-end gap-3">
+                <span
+                    class="rounded-full px-2.5 py-1 text-xs font-semibold"
+                    :class="roleStyles[member.role] ?? roleStyles.member"
+                >
+                    {{ member.roleLabel }}
+                </span>
+                <div v-if="canManage" class="flex items-center gap-0.5">
                 <Link
                     :href="`/band-members/${member.id}/edit`"
                     :aria-label="`Edit ${member.name}`"
@@ -125,6 +126,7 @@ const roleStyles = {
                 >
                     <i class="pi pi-trash text-sm" />
                 </button>
+                </div>
             </div>
         </li>
     </ul>
@@ -167,7 +169,7 @@ const roleStyles = {
             </template>
             <template v-else>
                 <span class="font-medium text-ink dark:text-canvas">{{ pendingRemoval?.name }}</span>
-                will be taken off the roster and lose access to this band. Their Roadie
+                will be taken off the roster and lose access to this band. Their GigWithMe
                 account stays intact.
             </template>
         </p>

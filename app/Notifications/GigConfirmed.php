@@ -30,13 +30,13 @@ class GigConfirmed extends Notification implements ShouldQueue
      */
     public function toTwilio(object $notifiable): TwilioSmsMessage
     {
-        $gig = $this->gig->loadMissing('venue');
+        $gig = $this->gig->loadMissing('venue', 'band');
 
         $where = $gig->venue?->name ?? $gig->name;
         $when = $gig->date->format('D, M j');
         $start = $gig->start_time ? " at {$gig->start_time}" : '';
 
         return (new TwilioSmsMessage)
-            ->content("Roadie: your gig at {$where} on {$when}{$start} is confirmed.");
+            ->content("{$gig->band->name}: your gig at {$where} on {$when}{$start} is confirmed.");
     }
 }

@@ -25,14 +25,14 @@ class DatabaseSeeder extends Seeder
     {
         // ─────────────────────────────────────────────────────────────
         //  TEST LOGIN
-        //  email:    test@roadie.test
+        //  email:    test@gigwithme.test
         //  password: password
         //  Member of all three demo bands below (one of each role) so the
         //  band switcher and role chips have something to show.
         // ─────────────────────────────────────────────────────────────
         $user = User::factory()->create([
             'name' => 'Casey Rivera',
-            'email' => 'test@roadie.test',
+            'email' => 'test@gigwithme.test',
             'password' => 'password', // hashed by the User model's cast
         ]);
 
@@ -90,6 +90,6 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        $this->command->info('Seeded test login → test@roadie.test / password');
+        $this->command->info('Seeded test login → test@gigwithme.test / password');
     }
 }
