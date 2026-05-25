@@ -48,6 +48,15 @@ function searchGenres({ query }) {
 
 const currentYear = new Date().getFullYear();
 
+// Settings sections shown in the left sub-sidebar. Currently just the band
+// profile; switching is client-side for now. Add entries here as the feature
+// set grows (e.g. notifications, members, billing) and render the matching
+// panel in the content column below.
+const sections = [
+    { key: 'band', icon: 'pi pi-id-card', label: 'Band profile' },
+];
+const activeSection = ref('band');
+
 function submit() {
     form
         .transform((data) => ({
@@ -63,22 +72,51 @@ function submit() {
 </script>
 
 <template>
-    <Head title="Band settings" />
+    <Head title="Settings" />
 
-    <div class="mx-auto max-w-2xl">
-        <div class="mb-6">
-            <h2 class="font-display text-3xl font-bold tracking-tight">Band settings</h2>
-            <p class="mt-1 text-sm text-ink/60 dark:text-canvas/55">
-                <template v-if="canManage">
-                    Update your band's profile, contact details and booking defaults.
-                </template>
-                <template v-else>
-                    Your band's details. Only owners and admins can make changes here.
-                </template>
-            </p>
-        </div>
+    <div class="mb-6">
+        <h2 class="font-display text-3xl font-bold tracking-tight">Settings</h2>
+    </div>
 
-        <form
+    <div class="flex flex-col gap-8 lg:flex-row lg:gap-10">
+        <!-- Settings sub-navigation -->
+        <nav class="lg:w-56 lg:shrink-0">
+            <ul class="flex gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
+                <li v-for="section in sections" :key="section.key" class="shrink-0">
+                    <button
+                        type="button"
+                        class="group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors"
+                        :class="
+                            activeSection === section.key
+                                ? 'bg-amp-violet/10 text-amp-violet dark:bg-amp-violet/15'
+                                : 'text-ink/70 hover:bg-surface dark:text-canvas/70 dark:hover:bg-white/5'
+                        "
+                        :aria-current="activeSection === section.key ? 'page' : undefined"
+                        @click="activeSection = section.key"
+                    >
+                        <i :class="section.icon" class="text-base shrink-0" />
+                        <span>{{ section.label }}</span>
+                    </button>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Section content -->
+        <div class="min-w-0 flex-1">
+            <section v-show="activeSection === 'band'" class="mx-auto max-w-2xl">
+                <div class="mb-6">
+                    <h3 class="font-display text-2xl font-bold tracking-tight">Band profile</h3>
+                    <p class="mt-1 text-sm text-ink/60 dark:text-canvas/55">
+                        <template v-if="canManage">
+                            Update your band's profile, contact details and booking defaults.
+                        </template>
+                        <template v-else>
+                            Your band's details. Only owners and admins can make changes here.
+                        </template>
+                    </p>
+                </div>
+
+                <form
             class="space-y-6 rounded-2xl border border-surface bg-white p-6 shadow-sm dark:border-white/10 dark:bg-riser sm:p-8"
             @submit.prevent="submit"
         >
@@ -238,6 +276,8 @@ function submit() {
                 </Link>
                 <Button type="submit" label="Save changes" :loading="form.processing" />
             </div>
-        </form>
+                </form>
+            </section>
+        </div>
     </div>
 </template>
