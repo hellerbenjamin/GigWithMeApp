@@ -56,6 +56,9 @@ Route::middleware(['auth', HasActiveBand::class])->group(function () {
     Route::get('/band-members', [BandMemberController::class, 'index'])->name('band-members.index');
     Route::get('/band-members/create', [BandMemberController::class, 'create'])->name('band-members.create');
     Route::post('/band-members', [BandMemberController::class, 'store'])->name('band-members.store');
+    Route::get('/band-members/{user}/edit', [BandMemberController::class, 'edit'])->name('band-members.edit');
+    Route::put('/band-members/{user}', [BandMemberController::class, 'update'])->name('band-members.update');
+    Route::delete('/band-members/{user}', [BandMemberController::class, 'destroy'])->name('band-members.destroy');
 
     // Band-scoped feature areas — placeholders until their controllers exist.
     Route::get('/music', static fn () => Inertia::render('Music/Index'))->name('music.index');

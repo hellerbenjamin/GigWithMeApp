@@ -10,12 +10,12 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
-class StoreBandMemberRequest extends FormRequest
+class UpdateBandMemberRequest extends FormRequest
 {
     /**
-     * Only owners and admins manage the roster. Membership of the active band is
-     * already guaranteed by HasActiveBand; here we narrow that to the two roles
-     * allowed to add people.
+     * Only owners and admins manage the roster. Whether a specific role change
+     * is allowed (e.g. not demoting the last owner) is a business rule handled
+     * in the controller/service, not an authorization concern.
      */
     public function authorize(): bool
     {
@@ -33,8 +33,8 @@ class StoreBandMemberRequest extends FormRequest
     }
 
     /**
-     * Normalise the email up front so the duplicate-membership check and the
-     * eventual user lookup compare against the stored, lower-cased form.
+     * Normalise the same way the store request does, so edits and adds store
+     * the email/name/phone in a consistent shape.
      */
     protected function prepareForValidation(): void
     {
@@ -50,28 +50,19 @@ class StoreBandMemberRequest extends FormRequest
      */
     public function rules(): array
     {
+        /** @var User $member */
+        $member = $this->route('user');
+
         return [
-            // Used only when the email is unknown and a new account is created;
-            // for an existing user their own account name wins, but we still
-            // require it so a fresh account always has a name.
             'name' => ['required', 'string', 'max:255'],
 
             'email' => [
                 'required', 'email', 'max:255',
-                // Reject anyone already on this band's roster — the pivot has a
-                // (band_id, user_id) unique key, and this is a friendlier error.
-                function (string $attribute, mixed $value, callable $fail): void {
-                    $band = ActiveBand::band();
-                    $user = User::where('email', $value)->first();
-
-                    if ($band && $user && $band->users()->whereKey($user->getKey())->exists()) {
-                        $fail('That person is already in your band.');
-                    }
-                },
+                // Editing a shared account: the email must stay unique across
+                // users, but the member's own current email is fine to keep.
+                Rule::unique('users', 'email')->ignore($member->getKey()),
             ],
 
-            // Like name, only used when a new account is created; an existing
-            // user's own phone number is left untouched.
             'phone_number' => ['nullable', 'string', 'max:255'],
 
             'role' => ['required', Rule::enum(BandUserRoleEnum::class)],

@@ -8,13 +8,34 @@ export default {
 </script>
 
 <script setup>
-import { Head, Link } from '@inertiajs/vue3';
+import { ref } from 'vue';
+import { Head, Link, router } from '@inertiajs/vue3';
 
 defineProps({
     members: { type: Array, default: () => [] },
-    // Whether the current user (owner/admin) may add members.
+    // Whether the current user (owner/admin) may add and remove members.
     canManage: { type: Boolean, default: false },
 });
+
+// The member queued for removal — drives the confirmation dialog. Null when
+// nothing is pending.
+const pendingRemoval = ref(null);
+const removing = ref(false);
+
+function confirmRemoval() {
+    if (!pendingRemoval.value) {
+        return;
+    }
+
+    router.delete(`/band-members/${pendingRemoval.value.id}`, {
+        preserveScroll: true,
+        onStart: () => (removing.value = true),
+        onFinish: () => {
+            removing.value = false;
+            pendingRemoval.value = null;
+        },
+    });
+}
 
 // First letters of the first two words — "Jordan Reyes" → "JR".
 function initials(name) {
@@ -73,6 +94,14 @@ const roleStyles = {
                     <span v-if="member.isYou" class="text-xs font-normal text-muted dark:text-canvas/45">(you)</span>
                 </p>
                 <p class="truncate text-sm text-ink/55 dark:text-canvas/50">{{ member.email }}</p>
+                <a
+                    v-if="member.phoneNumber"
+                    :href="`tel:${member.phoneNumber}`"
+                    class="mt-0.5 flex items-center gap-1.5 truncate text-sm text-ink/55 transition-colors hover:text-amp-violet dark:text-canvas/50 dark:hover:text-primary-400"
+                >
+                    <i class="pi pi-phone text-[0.65rem]" />
+                    {{ member.phoneNumber }}
+                </a>
             </div>
             <span
                 class="shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold"
@@ -80,6 +109,23 @@ const roleStyles = {
             >
                 {{ member.roleLabel }}
             </span>
+            <div v-if="canManage" class="flex shrink-0 items-center gap-0.5">
+                <Link
+                    :href="`/band-members/${member.id}/edit`"
+                    :aria-label="`Edit ${member.name}`"
+                    class="grid size-8 place-items-center rounded-lg text-ink/40 transition-colors hover:bg-surface hover:text-amp-violet dark:text-canvas/40 dark:hover:bg-white/5"
+                >
+                    <i class="pi pi-pencil text-sm" />
+                </Link>
+                <button
+                    type="button"
+                    :aria-label="member.isYou ? 'Leave band' : `Remove ${member.name}`"
+                    class="grid size-8 place-items-center rounded-lg text-ink/40 transition-colors hover:bg-cancelled/10 hover:text-cancelled dark:text-canvas/40"
+                    @click="pendingRemoval = member"
+                >
+                    <i class="pi pi-trash text-sm" />
+                </button>
+            </div>
         </li>
     </ul>
 
@@ -104,4 +150,35 @@ const roleStyles = {
             Add member
         </Link>
     </div>
+
+    <!-- Remove / leave confirmation -->
+    <Dialog
+        :visible="!!pendingRemoval"
+        modal
+        dismissable-mask
+        :header="pendingRemoval?.isYou ? 'Leave this band?' : 'Remove member?'"
+        :style="{ width: '26rem' }"
+        @update:visible="(open) => { if (!open) pendingRemoval = null; }"
+    >
+        <p class="text-sm text-ink/70 dark:text-canvas/65">
+            <template v-if="pendingRemoval?.isYou">
+                You'll lose access to this band's calendar and bookings. You can be added
+                back later by an owner or admin.
+            </template>
+            <template v-else>
+                <span class="font-medium text-ink dark:text-canvas">{{ pendingRemoval?.name }}</span>
+                will be taken off the roster and lose access to this band. Their Roadie
+                account stays intact.
+            </template>
+        </p>
+        <template #footer>
+            <Button label="Cancel" text severity="secondary" :disabled="removing" @click="pendingRemoval = null" />
+            <Button
+                :label="pendingRemoval?.isYou ? 'Leave band' : 'Remove'"
+                severity="danger"
+                :loading="removing"
+                @click="confirmRemoval"
+            />
+        </template>
+    </Dialog>
 </template>

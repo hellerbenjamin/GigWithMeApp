@@ -81,6 +81,40 @@ class CreateBandMemberTest extends TestCase
         ]);
     }
 
+    public function test_a_phone_number_is_stored_on_a_new_account(): void
+    {
+        [$owner] = $this->userInBand();
+
+        $this->actingAs($owner)->post('/band-members', [
+            'name' => 'Sam Rivera',
+            'email' => 'sam@band.test',
+            'phone_number' => '  (555) 123-4567  ',
+            'role' => 'member',
+        ])->assertRedirect('/band-members');
+
+        // Stored, with surrounding whitespace trimmed.
+        $this->assertSame('(555) 123-4567', User::where('email', 'sam@band.test')->value('phone_number'));
+    }
+
+    public function test_an_existing_users_phone_number_is_left_untouched(): void
+    {
+        [$owner] = $this->userInBand();
+        $existing = User::factory()->create([
+            'email' => 'jordan@band.test',
+            'phone_number' => '(111) 111-1111',
+        ]);
+
+        $this->actingAs($owner)->post('/band-members', [
+            'name' => 'Jordan Reyes',
+            'email' => 'jordan@band.test',
+            'phone_number' => '(999) 999-9999',
+            'role' => 'admin',
+        ])->assertRedirect('/band-members');
+
+        // Their own number wins, just like their name.
+        $this->assertSame('(111) 111-1111', $existing->fresh()->phone_number);
+    }
+
     public function test_a_person_already_on_the_roster_is_rejected(): void
     {
         [$owner, $band] = $this->userInBand();
