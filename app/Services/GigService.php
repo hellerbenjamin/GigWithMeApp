@@ -41,6 +41,22 @@ class GigService
     }
 
     /**
+     * Update an existing gig. The venue (when given) is already confirmed to
+     * belong to the band by {@see \App\Http\Requests\Gigs\UpdateGigRequest}, and
+     * band_id isn't in the validated set, so the gig can never be moved to
+     * another band. Callers must have confirmed the gig belongs to the acting
+     * band (see {@see \App\Http\Controllers\Gigs\GigController::edit}).
+     *
+     * @param  array<string, mixed>  $attributes  validated, fillable gig columns
+     */
+    public function updateGig(Gig $gig, array $attributes): Gig
+    {
+        $gig->update($attributes);
+
+        return $gig;
+    }
+
+    /**
      * Remove a gig from the calendar. Callers must have confirmed the gig
      * belongs to the acting band (see {@see \App\Http\Controllers\Gigs\GigController::destroy}).
      */

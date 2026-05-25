@@ -7,6 +7,7 @@ use App\Enums\GigTypeEnum;
 use App\Facades\ActiveBand;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Gigs\StoreGigRequest;
+use App\Http\Requests\Gigs\UpdateGigRequest;
 use App\Models\Gig;
 use App\Services\GigService;
 use Illuminate\Http\RedirectResponse;
@@ -53,6 +54,57 @@ class GigController extends Controller
         $label = $gig->name ?: $gig->date->format('M j, Y');
 
         return to_route('gigs.index')->with('success', "{$label} is on the calendar.");
+    }
+
+    /**
+     * Show the edit form for a gig. Scoped to the active band so one band can
+     * never edit another's gig — an off-band id 404s rather than leaking it.
+     */
+    public function edit(Gig $gig): Response
+    {
+        abort_unless($gig->band_id === ActiveBand::id(), 404);
+
+        $band = ActiveBand::band();
+
+        return Inertia::render('Gigs/Edit', [
+            'gig' => [
+                'id' => $gig->id,
+                'type' => $gig->type->value,
+                'status' => $gig->status->value,
+                'name' => $gig->name,
+                'venueId' => $gig->venue_id,
+                'date' => $gig->date->format('Y-m-d'),
+                // Times come back as H:i:s from the time columns; the form's
+                // pickers only care about hours and minutes.
+                'loadInTime' => $gig->load_in_time ? substr($gig->load_in_time, 0, 5) : null,
+                'soundcheckTime' => $gig->soundcheck_time ? substr($gig->soundcheck_time, 0, 5) : null,
+                'doorsTime' => $gig->doors_time ? substr($gig->doors_time, 0, 5) : null,
+                'startTime' => $gig->start_time ? substr($gig->start_time, 0, 5) : null,
+                'endTime' => $gig->end_time ? substr($gig->end_time, 0, 5) : null,
+                // decimal:2 casts to a string; hand the number picker a number.
+                'fee' => $gig->fee !== null ? (float) $gig->fee : null,
+                'currency' => $gig->currency,
+                'notes' => $gig->notes,
+            ],
+            'venues' => $band->venues()->orderBy('name')->get(['id', 'name']),
+            'types' => $this->options(GigTypeEnum::cases()),
+            'statuses' => $this->options(GigStatusEnum::cases()),
+        ]);
+    }
+
+    /**
+     * Persist edits to a gig. Scoped to the active band for the same reason as
+     * {@see self::edit()}.
+     */
+    public function update(UpdateGigRequest $request, Gig $gig, GigService $gigs): RedirectResponse
+    {
+        abort_unless($gig->band_id === ActiveBand::id(), 404);
+
+        $gig = $gigs->updateGig($gig, $request->validated());
+
+        $label = $gig->name ?: $gig->date->format('M j, Y');
+
+        return to_route('gigs.index')->with('success', "{$label} was updated.");
     }
 
     /**

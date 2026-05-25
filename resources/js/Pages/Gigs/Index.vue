@@ -137,6 +137,15 @@ function formatFee(gig) {
                 </span>
             </div>
 
+            <!-- Edit -->
+            <Link
+                :href="`/gigs/${gig.id}/edit`"
+                :aria-label="`Edit ${gigLabel(gig)}`"
+                class="grid size-8 shrink-0 place-items-center rounded-lg text-ink/40 transition-colors hover:bg-amp-violet/10 hover:text-amp-violet dark:text-canvas/40 dark:hover:text-primary-300"
+            >
+                <i class="pi pi-pencil text-sm" />
+            </Link>
+
             <!-- Remove -->
             <button
                 type="button"
