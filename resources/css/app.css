@@ -19,6 +19,18 @@
     /* Display face for headings — utilities: font-display. */
     --font-display: 'Bricolage Grotesque', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
 
+    /* App-wide 4px border radius. Collapse Tailwind's radius scale so every
+       rounded-{sm..4xl} utility lands on 4px; --radius-full is left untouched
+       so rounded-full pills/avatars stay fully round. */
+    --radius-xs: 4px;
+    --radius-sm: 4px;
+    --radius-md: 4px;
+    --radius-lg: 4px;
+    --radius-xl: 4px;
+    --radius-2xl: 4px;
+    --radius-3xl: 4px;
+    --radius-4xl: 4px;
+
     /* Band booking brand palette — see docs/band-booking-color-palette.md.
        These generate Tailwind utilities (bg-*, text-*, border-*, etc.). */
 

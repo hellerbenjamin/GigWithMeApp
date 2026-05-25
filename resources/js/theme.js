@@ -10,6 +10,19 @@ import Aura from '@primeuix/themes/aura';
 // Palettes were generated with the `palette()` / `mix()` helpers from
 // @primeuix/themes so each shade stays tonally consistent.
 export const BandPreset = definePreset(Aura, {
+    primitive: {
+        // App-wide 4px border radius. Collapsing Aura's xs–xl scale to a single
+        // value means every component that resolves `{border.radius.*}` lands on
+        // 4px. `none` stays 0 so square-cornered elements are still possible.
+        borderRadius: {
+            none: '0',
+            xs: '4px',
+            sm: '4px',
+            md: '4px',
+            lg: '4px',
+            xl: '4px',
+        },
+    },
     semantic: {
         primary: {
             50: '#f8f6fd',
