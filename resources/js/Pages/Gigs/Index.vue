@@ -25,6 +25,10 @@ const deleting = ref(false);
 // response — no round-trip. Null / 'all' mean "no filter".
 const currentYear = new Date().getFullYear();
 
+// Collapsed by default on mobile to keep the toolbar out of the way; the toggle
+// below reveals it. On sm+ the bar is always shown regardless of this flag.
+const showFilters = ref(false);
+
 const search = ref('');
 const statusFilter = ref(null);
 const typeFilter = ref(null);
@@ -188,8 +192,31 @@ function formatFee(gig) {
         </Link>
     </div>
 
+    <!-- Mobile filter toggle — hidden on sm+, where the bar is always shown. -->
+    <button
+        v-if="gigs.length"
+        type="button"
+        class="mt-6 flex w-full items-center justify-between rounded-xl border border-surface bg-white px-4 py-2.5 text-sm font-medium shadow-sm dark:border-white/10 dark:bg-riser sm:hidden"
+        :aria-expanded="showFilters"
+        @click="showFilters = !showFilters"
+    >
+        <span class="flex items-center gap-2">
+            <i class="pi pi-filter text-xs" />
+            Filters
+            <span
+                v-if="hasActiveFilters"
+                class="grid size-2 place-items-center rounded-full bg-amp-violet dark:bg-primary-400"
+            />
+        </span>
+        <i :class="showFilters ? 'pi pi-chevron-up' : 'pi pi-chevron-down'" class="text-xs text-muted dark:text-canvas/45" />
+    </button>
+
     <!-- Filters -->
-    <div v-if="gigs.length" class="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+    <div
+        v-if="gigs.length"
+        class="mt-3 flex-col gap-3 sm:mt-6 sm:flex sm:flex-row sm:flex-wrap sm:items-center"
+        :class="showFilters ? 'flex' : 'hidden'"
+    >
         <IconField class="w-full sm:flex-1 sm:min-w-52">
             <InputIcon class="pi pi-search" />
             <InputText v-model="search" placeholder="Search by title or venue" fluid />
@@ -247,63 +274,79 @@ function formatFee(gig) {
         <li
             v-for="gig in filteredGigs"
             :key="gig.id"
-            class="flex items-center gap-4 rounded-2xl border border-surface bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:border-white/10 dark:bg-riser sm:gap-5 sm:p-5"
+            class="relative flex items-stretch overflow-hidden rounded-2xl border border-surface bg-white shadow-sm transition-shadow hover:shadow-md dark:border-white/10 dark:bg-riser"
         >
-            <!-- Date chip -->
+            <!-- Date block — flush against the card's top, left and bottom edges -->
             <div
-                class="flex w-14 shrink-0 flex-col items-center rounded-xl bg-amp-violet/10 py-2 text-amp-violet dark:bg-primary-500/15 dark:text-primary-300"
+                class="flex w-16 shrink-0 flex-col items-center justify-center bg-amp-violet/10 text-amp-violet dark:bg-primary-500/15 dark:text-primary-300"
             >
                 <span class="text-[10px] font-semibold uppercase tracking-wide">{{ dateParts(gig.date).weekday }}</span>
                 <span class="font-display text-xl font-bold leading-none">{{ dateParts(gig.date).day }}</span>
                 <span class="text-[10px] font-medium uppercase">{{ dateParts(gig.date).month }}</span>
             </div>
 
-            <!-- Details -->
-            <div class="min-w-0 flex-1">
-                <div class="flex items-center gap-2">
-                    <p class="truncate font-display text-lg font-semibold tracking-tight">
-                        {{ gig.name || (gig.type === 'gig' ? 'Untitled gig' : gig.type) }}
+            <!-- Status — flush in the top-right corner; the card's overflow-hidden
+                 clips its outer corner to match the rounding, and the inner corner
+                 is tucked with a small radius. -->
+            <Tag
+                :value="gig.statusLabel"
+                :severity="gig.statusSeverity"
+                class="!absolute right-0 top-0 !rounded-none !rounded-bl-lg !px-2.5 !py-1 text-xs"
+            />
+
+            <!-- Content — carries the padding the card used to have. The fee and
+                 actions are vertically centred, so they tuck just under the
+                 corner status chip without needing extra right clearance. -->
+            <div class="flex min-w-0 flex-1 items-center gap-4 p-4 sm:gap-5 sm:p-5">
+                <!-- Details -->
+                <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-2">
+                        <p class="truncate font-display text-lg font-semibold tracking-tight">
+                            {{ gig.name || (gig.type === 'gig' ? 'Untitled gig' : gig.type) }}
+                        </p>
+                        <Tag
+                            v-if="gig.type !== 'gig'"
+                            :value="gig.type"
+                            severity="secondary"
+                            class="shrink-0 capitalize"
+                        />
+                    </div>
+                    <p class="mt-0.5 truncate text-sm text-ink/55 dark:text-canvas/50">
+                        <i class="pi pi-map-marker text-[10px]" />
+                        {{ gig.venue || 'Venue TBD' }}
+                        <span v-if="timeRange(gig)"> · {{ timeRange(gig) }}</span>
                     </p>
-                    <Tag
-                        v-if="gig.type !== 'gig'"
-                        :value="gig.type"
-                        severity="secondary"
-                        class="shrink-0 capitalize"
-                    />
                 </div>
-                <p class="mt-0.5 truncate text-sm text-ink/55 dark:text-canvas/50">
-                    <i class="pi pi-map-marker text-[10px]" />
-                    {{ gig.venue || 'Venue TBD' }}
-                    <span v-if="timeRange(gig)"> · {{ timeRange(gig) }}</span>
-                </p>
+
+                <!-- Fee + actions, grouped into one right-aligned cluster so they
+                     read as a unit rather than floating across the row. -->
+                <div class="flex shrink-0 items-center gap-3">
+                    <span v-if="formatFee(gig)" class="hidden text-sm font-semibold tabular-nums text-ink dark:text-canvas sm:inline">
+                        {{ formatFee(gig) }}
+                    </span>
+
+                    <div class="flex items-center gap-0.5">
+                        <!-- Edit -->
+                        <Link
+                            :href="`/gigs/${gig.id}/edit`"
+                            :aria-label="`Edit ${gigLabel(gig)}`"
+                            class="grid size-8 place-items-center rounded-lg text-ink/50 transition-colors hover:bg-amp-violet/10 hover:text-amp-violet dark:text-canvas/50 dark:hover:text-primary-300"
+                        >
+                            <i class="pi pi-pencil text-sm" />
+                        </Link>
+
+                        <!-- Remove -->
+                        <button
+                            type="button"
+                            :aria-label="`Delete ${gigLabel(gig)}`"
+                            class="grid size-8 place-items-center rounded-lg text-ink/50 transition-colors hover:bg-cancelled/10 hover:text-cancelled dark:text-canvas/50"
+                            @click="pendingDeletion = gig"
+                        >
+                            <i class="pi pi-trash text-sm" />
+                        </button>
+                    </div>
+                </div>
             </div>
-
-            <!-- Status + fee -->
-            <div class="flex shrink-0 flex-col items-end gap-1.5">
-                <Tag :value="gig.statusLabel" :severity="gig.statusSeverity" />
-                <span v-if="formatFee(gig)" class="text-sm font-medium text-ink/70 dark:text-canvas/65">
-                    {{ formatFee(gig) }}
-                </span>
-            </div>
-
-            <!-- Edit -->
-            <Link
-                :href="`/gigs/${gig.id}/edit`"
-                :aria-label="`Edit ${gigLabel(gig)}`"
-                class="grid size-8 shrink-0 place-items-center rounded-lg text-ink/40 transition-colors hover:bg-amp-violet/10 hover:text-amp-violet dark:text-canvas/40 dark:hover:text-primary-300"
-            >
-                <i class="pi pi-pencil text-sm" />
-            </Link>
-
-            <!-- Remove -->
-            <button
-                type="button"
-                :aria-label="`Delete ${gigLabel(gig)}`"
-                class="grid size-8 shrink-0 place-items-center rounded-lg text-ink/40 transition-colors hover:bg-cancelled/10 hover:text-cancelled dark:text-canvas/40"
-                @click="pendingDeletion = gig"
-            >
-                <i class="pi pi-trash text-sm" />
-            </button>
         </li>
     </ul>
 
