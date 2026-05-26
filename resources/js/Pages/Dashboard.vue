@@ -109,7 +109,7 @@ function gigDate(iso) {
         <div
             v-for="card in statCards"
             :key="card.key"
-            class="rounded-2xl border border-surface bg-white p-5 shadow-sm transition-shadow hover:shadow-md dark:border-white/10 dark:bg-riser"
+            class="rounded-2xl border border-surface bg-white p-5 shadow-sm dark:border-white/10 dark:bg-riser"
         >
             <span
                 class="grid size-10 place-items-center rounded-xl"

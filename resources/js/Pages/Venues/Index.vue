@@ -128,20 +128,15 @@ function confirmDeletion() {
                     class="absolute inset-0 rounded-2xl focus:outline-none"
                 />
 
-                <div class="flex items-start justify-between">
-                    <span class="grid size-10 place-items-center rounded-xl bg-encore-coral/15 text-encore-coral">
-                        <i class="pi pi-map-marker" />
-                    </span>
-                    <button
-                        type="button"
-                        :aria-label="`Delete ${venue.name}`"
-                        class="relative z-10 grid size-8 place-items-center rounded-lg text-ink/50 transition-colors hover:bg-cancelled/10 hover:text-cancelled dark:text-canvas/50"
-                        @click.stop="pendingDeletion = venue"
-                    >
-                        <i class="pi pi-trash text-sm" />
-                    </button>
-                </div>
-                <p class="mt-4 font-display text-lg font-semibold tracking-tight">{{ venue.name }}</p>
+                <button
+                    type="button"
+                    :aria-label="`Delete ${venue.name}`"
+                    class="absolute right-4 top-4 z-10 grid size-8 place-items-center rounded-lg text-ink/50 transition-colors hover:bg-cancelled/10 hover:text-cancelled dark:text-canvas/50"
+                    @click.stop="pendingDeletion = venue"
+                >
+                    <i class="pi pi-trash text-sm" />
+                </button>
+                <p class="pr-10 font-display text-lg font-semibold tracking-tight">{{ venue.name }}</p>
                 <p v-if="location(venue)" class="text-sm text-ink/55 dark:text-canvas/50">
                     {{ location(venue) }}
                 </p>
