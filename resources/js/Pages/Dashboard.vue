@@ -31,9 +31,23 @@ const greeting = computed(() => {
 
 const firstName = computed(() => user.value?.name?.split(' ')[0] ?? 'there');
 
+// Whole-dollar currency, matching the gigs index. `currency` defaults to USD.
+function formatMoney(amount, currency) {
+    return new Intl.NumberFormat(undefined, {
+        style: 'currency',
+        currency: currency || 'USD',
+        maximumFractionDigits: 0,
+    }).format(amount ?? 0);
+}
+
+function gigFee(gig) {
+    if (gig.fee === null || gig.fee === undefined) return null;
+    return formatMoney(gig.fee, gig.currency);
+}
+
 const statCards = computed(() => [
     { key: 'gigs', icon: 'pi pi-calendar', label: 'Upcoming gigs', value: props.stats.upcomingGigs ?? 0, accent: 'teal' },
-    { key: 'fees', icon: 'pi pi-dollar', label: 'Booked this month', value: props.stats.bookedThisMonth ?? '$0', accent: 'violet' },
+    { key: 'fees', icon: 'pi pi-dollar', label: 'Booked this month', value: formatMoney(props.stats.bookedThisMonth, props.stats.currency), accent: 'violet' },
     { key: 'venues', icon: 'pi pi-map-marker', label: 'Venues', value: props.stats.venues ?? 0, accent: 'coral' },
     { key: 'members', icon: 'pi pi-users', label: 'Band members', value: props.stats.members ?? 0, accent: 'indigo' },
 ]);
@@ -118,10 +132,11 @@ function gigDate(iso) {
         </div>
 
         <ul v-if="upcomingGigs.length" class="divide-y divide-surface dark:divide-white/10">
-            <li
+            <Link
                 v-for="gig in upcomingGigs"
                 :key="gig.id"
-                class="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-canvas dark:hover:bg-white/5"
+                :href="`/gigs/${gig.id}`"
+                class="flex cursor-pointer items-center gap-4 px-5 py-4 transition-colors hover:bg-canvas dark:hover:bg-white/5"
             >
                 <!-- Date block -->
                 <div
@@ -150,10 +165,10 @@ function gigDate(iso) {
                 >
                     {{ gig.status }}
                 </span>
-                <span v-if="gig.fee" class="hidden shrink-0 font-display text-sm font-semibold sm:block">
-                    {{ gig.fee }}
+                <span v-if="gigFee(gig)" class="hidden shrink-0 font-display text-sm font-semibold tabular-nums sm:block">
+                    {{ gigFee(gig) }}
                 </span>
-            </li>
+            </Link>
         </ul>
 
         <!-- Empty state -->
