@@ -54,14 +54,22 @@ function confirmDeletion() {
             </p>
         </div>
 
-        <Link
-            v-if="venues.length"
-            href="/venues/create"
-            class="inline-flex items-center justify-center gap-2 rounded-xl bg-amp-violet px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:brightness-105 hover:shadow-md active:scale-[0.98] dark:bg-primary-500"
-        >
-            <i class="pi pi-plus text-xs" />
-            New venue
-        </Link>
+        <div v-if="venues.length" class="flex items-center gap-2">
+            <Link
+                href="/venues/import"
+                class="inline-flex items-center justify-center gap-2 rounded-xl border border-surface px-4 py-2.5 text-sm font-semibold text-ink/70 transition-colors hover:bg-surface dark:border-white/15 dark:text-canvas/70 dark:hover:bg-white/5"
+            >
+                <i class="pi pi-file-import text-xs" />
+                Import CSV
+            </Link>
+            <Link
+                href="/venues/create"
+                class="inline-flex items-center justify-center gap-2 rounded-xl bg-amp-violet px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:brightness-105 hover:shadow-md active:scale-[0.98] dark:bg-primary-500"
+            >
+                <i class="pi pi-plus text-xs" />
+                New venue
+            </Link>
+        </div>
     </div>
 
     <!-- Venue list -->
@@ -120,13 +128,22 @@ function confirmDeletion() {
         </span>
         <p class="mt-3 text-sm font-medium">No venues yet</p>
         <p class="text-sm text-ink/50 dark:text-canvas/45">Add your first room to start your venue book.</p>
-        <Link
-            href="/venues/create"
-            class="mt-5 inline-flex items-center justify-center gap-2 rounded-xl bg-amp-violet px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:brightness-105 hover:shadow-md active:scale-[0.98] dark:bg-primary-500"
-        >
-            <i class="pi pi-plus text-xs" />
-            Add a venue
-        </Link>
+        <div class="mt-5 flex flex-wrap items-center justify-center gap-2">
+            <Link
+                href="/venues/create"
+                class="inline-flex items-center justify-center gap-2 rounded-xl bg-amp-violet px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:brightness-105 hover:shadow-md active:scale-[0.98] dark:bg-primary-500"
+            >
+                <i class="pi pi-plus text-xs" />
+                Add a venue
+            </Link>
+            <Link
+                href="/venues/import"
+                class="inline-flex items-center justify-center gap-2 rounded-xl border border-surface px-4 py-2.5 text-sm font-semibold text-ink/70 transition-colors hover:bg-surface dark:border-white/15 dark:text-canvas/70 dark:hover:bg-white/5"
+            >
+                <i class="pi pi-file-import text-xs" />
+                Import from CSV
+            </Link>
+        </div>
     </div>
 
     <!-- Delete confirmation -->

@@ -21,6 +21,18 @@ class StoreVenueRequest extends FormRequest
      */
     public function rules(): array
     {
+        return self::venueRules();
+    }
+
+    /**
+     * The per-field venue rules, kept here as the single source of truth so the
+     * CSV importer ({@see \App\Services\VenueImportService}) validates each row
+     * against exactly the same constraints as the create/edit forms.
+     *
+     * @return array<string, array<mixed>>
+     */
+    public static function venueRules(): array
+    {
         return [
             'name' => ['required', 'string', 'max:255'],
             'address' => ['nullable', 'string', 'max:255'],

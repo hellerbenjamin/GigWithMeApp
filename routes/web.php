@@ -7,6 +7,7 @@ use App\Http\Controllers\Bands\SetActiveBandController;
 use App\Http\Controllers\Gigs\GigController;
 use App\Http\Controllers\Rsvp\RsvpController;
 use App\Http\Controllers\VenueController;
+use App\Http\Controllers\VenueImportController;
 use App\Http\Middleware\HasActiveBand;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -53,6 +54,18 @@ Route::middleware(['auth', HasActiveBand::class])->group(function () {
     Route::get('/venues', [VenueController::class, 'index'])->name('venues.index');
     Route::get('/venues/create', [VenueController::class, 'create'])->name('venues.create');
     Route::post('/venues', [VenueController::class, 'store'])->name('venues.store');
+
+    // Bulk CSV import — registered before the {venue} routes so the literal
+    // "import" path can't be swallowed by model binding. The token names a
+    // per-session temp upload; constrain it to a UUID so it can't reach
+    // arbitrary paths.
+    Route::get('/venues/import', [VenueImportController::class, 'create'])->name('venues.import.create');
+    Route::post('/venues/import', [VenueImportController::class, 'parse'])->name('venues.import.parse');
+    Route::get('/venues/import/{token}', [VenueImportController::class, 'map'])
+        ->where('token', '[0-9a-fA-F-]{36}')->name('venues.import.map');
+    Route::post('/venues/import/{token}', [VenueImportController::class, 'import'])
+        ->where('token', '[0-9a-fA-F-]{36}')->name('venues.import.store');
+
     Route::get('/venues/{venue}/edit', [VenueController::class, 'edit'])->name('venues.edit');
     Route::put('/venues/{venue}', [VenueController::class, 'update'])->name('venues.update');
     Route::delete('/venues/{venue}', [VenueController::class, 'destroy'])->name('venues.destroy');

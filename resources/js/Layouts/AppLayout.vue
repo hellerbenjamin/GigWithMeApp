@@ -50,7 +50,7 @@ const sidebarOpen = ref(false);
                         :severity="flash.severity"
                         closable
                     >
-                        {{ flash.text }}
+                        <span class="whitespace-pre-line">{{ flash.text }}</span>
                     </Message>
                 </div>
 
