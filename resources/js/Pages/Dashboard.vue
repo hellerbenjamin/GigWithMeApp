@@ -83,7 +83,7 @@ function gigDate(iso) {
         <!-- Encore Coral is reserved for the single highest-priority action. -->
         <Link
             href="/gigs/create"
-            class="inline-flex items-center justify-center gap-2 rounded-xl bg-encore-coral px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:brightness-105 hover:shadow-md active:scale-[0.98]"
+            class="inline-flex items-center justify-center gap-2 rounded-xl bg-amp-violet px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:brightness-105 hover:shadow-md active:scale-[0.98] dark:bg-primary-500"
         >
             <i class="pi pi-plus text-xs" />
             Book a gig
