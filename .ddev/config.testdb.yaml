@@ -1,0 +1,8 @@
+# Creates an isolated `testing` Postgres database on `ddev start`, so the test
+# suite (phpunit.xml points DB_DATABASE at `testing`) runs on Postgres without
+# clobbering the dev `db` database. Idempotent — skips creation if it exists.
+hooks:
+  post-start:
+    - exec: |
+        PGPASSWORD=db psql -h db -U db -d db -tAc "SELECT 1 FROM pg_database WHERE datname='testing'" | grep -q 1 \
+          || PGPASSWORD=db psql -h db -U db -d db -c 'CREATE DATABASE testing;'

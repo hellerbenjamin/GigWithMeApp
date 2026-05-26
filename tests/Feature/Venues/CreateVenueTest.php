@@ -97,8 +97,8 @@ class CreateVenueTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Venues/Index')
-                ->has('venues', 1)
-                ->where('venues.0.name', 'Ours')
+                ->has('venues.data', 1)
+                ->where('venues.data.0.name', 'Ours')
             );
     }
 

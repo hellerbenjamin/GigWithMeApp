@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Facades\ActiveBand;
+use App\Http\Requests\Venues\IndexVenuesRequest;
 use App\Http\Requests\Venues\StoreVenueRequest;
 use App\Http\Requests\Venues\UpdateVenueRequest;
 use App\Models\Venue;
@@ -18,17 +19,52 @@ use Inertia\Response;
 class VenueController extends Controller
 {
     /**
-     * List the active band's venues, newest first.
+     * List the active band's venues, with search, filters, sort and paging. All
+     * state rides the query string so the page is shareable and survives reload;
+     * everything stays scoped to the active band.
      */
-    public function index(): Response
+    public function index(IndexVenuesRequest $request): Response
     {
-        $venues = ActiveBand::band()
-            ->venues()
-            ->orderBy('name')
-            ->get(['id', 'name', 'city', 'state', 'country', 'contact_person', 'contact_phone']);
+        $band = ActiveBand::band();
+        $filters = $request->filters();
+        [$sortColumn, $sortDirection] = IndexVenuesRequest::SORTS[$filters['sort']];
+
+        $venues = $band->venues()
+            // OR across the searchable columns, grouped so it can't escape the
+            // band scope. caseSensitive:false → ilike on Postgres, lower()-like
+            // elsewhere, keeping search case-insensitive and DB-portable.
+            ->when($filters['search'], fn ($query, $search) => $query->where(function ($group) use ($search) {
+                foreach (['name', 'city', 'state', 'contact_person'] as $column) {
+                    $group->orWhereLike($column, "%{$search}%", caseSensitive: false);
+                }
+            }))
+            ->when($filters['country'], fn ($query, $country) => $query->where('country', $country))
+            ->when($filters['state'], fn ($query, $state) => $query->where('state', $state))
+            ->when($filters['has_contact'], fn ($query) => $query->where(fn ($contact) => $contact
+                ->whereNotNull('contact_person')
+                ->orWhereNotNull('contact_phone')
+            ))
+            ->orderBy($sortColumn, $sortDirection)
+            ->paginate(12, ['id', 'name', 'city', 'state', 'country', 'contact_person', 'contact_phone'])
+            ->withQueryString();
 
         return Inertia::render('Venues/Index', [
             'venues' => $venues,
+            'filters' => $filters,
+            'filterOptions' => [
+                // Dropdown options are derived from the band's own data (location
+                // is free-text). States cascade off the selected country.
+                'countries' => $band->venues()
+                    ->whereNotNull('country')->where('country', '!=', '')
+                    ->distinct()->orderBy('country')->pluck('country'),
+                'states' => $band->venues()
+                    ->when($filters['country'], fn ($query, $country) => $query->where('country', $country))
+                    ->whereNotNull('state')->where('state', '!=', '')
+                    ->distinct()->orderBy('state')->pluck('state'),
+            ],
+            // Unfiltered existence — distinct from the filtered count, so the UI
+            // can tell "no venues yet" apart from "nothing matches these filters".
+            'hasVenues' => $band->venues()->exists(),
         ]);
     }
 
