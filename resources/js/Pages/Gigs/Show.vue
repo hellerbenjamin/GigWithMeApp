@@ -162,7 +162,7 @@ const progressPct = computed(() => {
                     <dd class="mt-1 text-sm">{{ gig.venue || 'To be decided' }}</dd>
                 </div>
                 <div>
-                    <dt class="text-xs font-semibold uppercase tracking-wider text-muted dark:text-canvas/45">Booking</dt>
+                    <dt class="text-xs font-semibold uppercase tracking-wider text-muted dark:text-canvas/45">Availability</dt>
                     <dd class="mt-1 text-sm">{{ gig.bookingModeLabel }}</dd>
                 </div>
                 <div v-if="formattedFee">

@@ -20,8 +20,8 @@ enum GigBookingModeEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::Auto => 'Auto-confirm',
-            self::Poll => 'Poll the band',
+            self::Auto => 'Everyone is Available',
+            self::Poll => 'Ask the band',
         };
     }
 

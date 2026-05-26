@@ -109,7 +109,7 @@ function submit() {
                     </div>
 
                     <div class="space-y-1.5">
-                        <label for="booking_mode" class="block text-sm font-medium">Booking</label>
+                        <label for="booking_mode" class="block text-sm font-medium">Availability</label>
                         <Select
                             input-id="booking_mode"
                             v-model="form.booking_mode"
