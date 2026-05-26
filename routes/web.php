@@ -60,9 +60,13 @@ Route::middleware(['auth', HasActiveBand::class])->group(function () {
     Route::get('/gigs', [GigController::class, 'index'])->name('gigs.index');
     Route::get('/gigs/create', [GigController::class, 'create'])->name('gigs.create');
     Route::post('/gigs', [GigController::class, 'store'])->name('gigs.store');
+    Route::get('/gigs/{gig}', [GigController::class, 'show'])->name('gigs.show');
     Route::get('/gigs/{gig}/edit', [GigController::class, 'edit'])->name('gigs.edit');
     Route::put('/gigs/{gig}', [GigController::class, 'update'])->name('gigs.update');
     Route::delete('/gigs/{gig}', [GigController::class, 'destroy'])->name('gigs.destroy');
+    // Poll-mode booking actions, owner/admin-gated in the controller.
+    Route::post('/gigs/{gig}/confirm', [GigController::class, 'confirm'])->name('gigs.confirm');
+    Route::post('/gigs/{gig}/repoll', [GigController::class, 'rePoll'])->name('gigs.repoll');
 
     Route::get('/band-members', [BandMemberController::class, 'index'])->name('band-members.index');
     Route::get('/band-members/create', [BandMemberController::class, 'create'])->name('band-members.create');

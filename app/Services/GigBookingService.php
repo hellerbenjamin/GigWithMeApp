@@ -91,6 +91,50 @@ class GigBookingService
     }
 
     /**
+     * Re-run a poll from scratch. Used when the gig's date changed, or when an
+     * admin reopens a poll that closed needing attention: every reply is wiped
+     * back to pending (a stale "yes" to the old plan shouldn't carry over), the
+     * needs-attention stamp is cleared, and everyone who can get an SMS is asked
+     * again. The actor is auto-marked available, exactly as on the first open.
+     *
+     * @param  User  $actor  the member re-polling; auto-marked available
+     */
+    public function rePoll(Gig $gig, User $actor): Gig
+    {
+        // Reopen the gig: a confirmed/cancelled poll becomes pending again so
+        // evaluatePoll can settle it afresh, and the attention stamp is cleared.
+        // poll_closed_at isn't fillable (guarded like in evaluatePoll), so it's
+        // set directly rather than mass-assigned.
+        $gig->status = GigStatusEnum::Pending->value;
+        $gig->poll_closed_at = null;
+        $gig->save();
+
+        foreach ($gig->memberResponses()->get() as $response) {
+            $isActor = $response->user_id === $actor->getKey();
+
+            $response->update([
+                'status' => $isActor
+                    ? GigResponseStatusEnum::Available->value
+                    : GigResponseStatusEnum::Pending->value,
+                'responded_at' => $isActor ? now() : null,
+                'channel' => $isActor ? 'web' : null,
+                'note' => null,
+            ]);
+        }
+
+        $gig->load('memberResponses.user');
+
+        $gig->memberResponses
+            ->filter(fn (GigMemberResponse $r) => $r->status === GigResponseStatusEnum::Pending
+                && filled($r->user->phone_number))
+            ->each(fn (GigMemberResponse $r) => $r->user->notify(new GigPollOpened($r)));
+
+        $this->evaluatePoll($gig);
+
+        return $gig;
+    }
+
+    /**
      * Record one member's reply, from whatever transport (web / sms / rcs), then
      * re-check whether the poll is settled. The single funnel all channels share.
      */

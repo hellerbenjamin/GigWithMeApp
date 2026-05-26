@@ -154,9 +154,11 @@ out of CRUD:
 
 ## Build phases
 
-> Status: Phase 1 ✅ done. Phase 2 🟡 **core done** (responses, seeding, magic-link
-> RSVP, evaluate → confirm / needs-attention, both SMS notifications, tests) —
-> see "Next steps" for the Phase 2 work still outstanding. Phases 3–4 not started.
+> Status: Phase 1 ✅ done. Phase 2 🟡 **nearly done** — core (responses, seeding,
+> magic-link RSVP, evaluate → confirm / needs-attention, both SMS notifications)
+> plus the **admin poll UI** (gig detail page with poll progress, Confirm anyway,
+> Re-poll) are in, with tests. Still outstanding: re-poll *on date edit* and
+> membership-change handling (Next steps item 2). Phases 3–4 not started.
 
 1. **Auto-confirm (flow 1) — smallest.** ✅ `GigBookingModeEnum`; `booking_mode` +
    `default_booking_mode` migrations; create-form select + band setting; wire
@@ -177,15 +179,18 @@ out of CRUD:
 
 Captured from the build so far — the gaps I flagged, in rough priority order:
 
-1. **Admin poll UI (finishes Phase 2).** The needs-attention path currently only
-   fires an SMS; there's no in-app surface. Add to the gig list/detail:
-   - poll progress for `poll` gigs (e.g. `4/5 in`, per-member chips by
-     `GigResponseStatusEnum::severity()`);
-   - for owners/admins on a closed-but-unconfirmed poll: **Confirm anyway**
-     (→ `GigBookingService::confirm`) and **Re-poll** actions.
-2. **Re-poll + membership changes (finishes Phase 2).**
-   - Editing a poll gig's **date** offers Re-poll: reset responses to `pending`,
-     clear `poll_closed_at`, resend `GigPollOpened` (decided: always offer).
+1. ~~**Admin poll UI (finishes Phase 2).**~~ ✅ Done. New `Gigs/Show` detail page
+   (`gigs.show`, reachable from the calendar): poll progress (`{n}/{total} in`
+   bar, available/can't/waiting tallies, per-member chips by
+   `GigResponseStatusEnum::severity()` with notes + relative reply times). For
+   owners/admins, a needs-attention banner plus **Confirm anyway**
+   (`gigs.confirm` → `GigBookingService::confirm`) and **Re-poll**
+   (`gigs.repoll` → `GigBookingService::rePoll`), each behind a confirm dialog
+   since both SMS the band. Covered by `GigPollAdminTest`.
+2. **Re-poll on date edit + membership changes (finishes Phase 2).** The
+   `rePoll()` service method and manual button exist; what's left:
+   - Editing a poll gig's **date** should offer Re-poll automatically (reuse
+     `GigBookingService::rePoll`); decided: always offer.
    - Member **added** mid-poll → add a `pending` response; member **removed** →
      drop their response and re-`evaluatePoll` (a removal can complete the poll).
 3. **Phase 3 — RCS** quick-reply channel (see RCS notes below).

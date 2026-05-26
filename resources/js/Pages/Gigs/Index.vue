@@ -274,8 +274,16 @@ function formatFee(gig) {
         <li
             v-for="gig in filteredGigs"
             :key="gig.id"
-            class="relative flex items-stretch overflow-hidden rounded-2xl border border-surface bg-white shadow-sm transition-shadow hover:shadow-md dark:border-white/10 dark:bg-riser"
+            class="group relative flex items-stretch overflow-hidden rounded-2xl border border-surface bg-white shadow-sm transition-shadow hover:shadow-md dark:border-white/10 dark:bg-riser"
         >
+            <!-- Stretched link: the whole card opens the gig's detail page. The
+                 edit/delete buttons sit above it (z-10) so they stay clickable. -->
+            <Link
+                :href="`/gigs/${gig.id}`"
+                :aria-label="`View ${gigLabel(gig)}`"
+                class="absolute inset-0 z-0"
+            />
+
             <!-- Date block — flush against the card's top, left and bottom edges -->
             <div
                 class="flex w-16 shrink-0 flex-col items-center justify-center bg-amp-violet/10 text-amp-violet dark:bg-primary-500/15 dark:text-primary-300"
@@ -301,7 +309,7 @@ function formatFee(gig) {
                 <!-- Details -->
                 <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-2">
-                        <p class="truncate font-display text-lg font-semibold tracking-tight">
+                        <p class="truncate font-display text-lg font-semibold tracking-tight transition-colors group-hover:text-amp-violet dark:group-hover:text-primary-300">
                             {{ gig.name || (gig.type === 'gig' ? 'Untitled gig' : gig.type) }}
                         </p>
                         <Tag
@@ -319,8 +327,9 @@ function formatFee(gig) {
                 </div>
 
                 <!-- Fee + actions, grouped into one right-aligned cluster so they
-                     read as a unit rather than floating across the row. -->
-                <div class="flex shrink-0 items-center gap-3">
+                     read as a unit rather than floating across the row. Raised
+                     above the stretched link so the buttons stay clickable. -->
+                <div class="relative z-10 flex shrink-0 items-center gap-3">
                     <span v-if="formatFee(gig)" class="hidden text-sm font-semibold tabular-nums text-ink dark:text-canvas sm:inline">
                         {{ formatFee(gig) }}
                     </span>
