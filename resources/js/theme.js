@@ -24,34 +24,38 @@ export const BandPreset = definePreset(Aura, {
         },
     },
     semantic: {
+        // PREVIEW: earthy palette (dbd56e / 88ab75 / 2d93ad / 7d7c84 / de8f6e),
+        // pushed more vibrant (less pastel). Primary = Pacific Cyan, saturated.
         primary: {
-            50: '#f8f6fd',
-            100: '#dcd5f6',
-            200: '#c0b3ee',
-            300: '#a492e7',
-            400: '#8870df',
-            500: '#6c4fd8', // Amp Violet
-            600: '#5c43b8',
-            700: '#4c3797',
-            800: '#3b2b77',
-            900: '#2b2056',
-            950: '#1b1436',
+            50: '#ebf8fb',
+            100: '#c4ecf3',
+            200: '#93dde9',
+            300: '#58cadc',
+            400: '#29b2cc',
+            500: '#1296b8', // Pacific Cyan — vibrant
+            600: '#0f7c99',
+            700: '#0c627a',
+            800: '#0b4b5d',
+            900: '#0a3340',
+            950: '#06222b',
         },
         colorScheme: {
+            // PREVIEW: warm-gray neutral ramp built around Rosy Granite (#7d7c84,
+            // the 500 muted step), deepening to a near-black ink for text.
             light: {
                 surface: {
                     0: '#ffffff',
-                    50: '#faf8f5', // Canvas — page background
-                    100: '#edeae3', // Surface — cards, raised surfaces
-                    200: '#cac7c1',
-                    300: '#a6a49f',
-                    400: '#83817c',
-                    500: '#5f5e5a', // Muted — borders, secondary text
-                    600: '#4b4a4a',
-                    700: '#3e3d3f',
-                    800: '#302f34',
-                    900: '#26252b',
-                    950: '#1c1b23', // Ink — primary text
+                    50: '#f7f6f5', // Canvas — page background (warm off-white)
+                    100: '#eceae9', // Surface — cards, raised surfaces
+                    200: '#d6d4d6',
+                    300: '#b6b4b8',
+                    400: '#949298',
+                    500: '#7d7c84', // Rosy Granite — Muted (borders, secondary text)
+                    600: '#636269',
+                    700: '#4e4d53',
+                    800: '#3a393e',
+                    900: '#2c2b30',
+                    950: '#1f1e22', // Ink — primary text
                 },
             },
             // Dark mode is built on Stage Indigo per docs/band-booking-color-palette.md

@@ -34,19 +34,28 @@
     /* Band booking brand palette — see docs/band-booking-color-palette.md.
        These generate Tailwind utilities (bg-*, text-*, border-*, etc.). */
 
+    /* PREVIEW: earthy palette (dbd56e / 88ab75 / 2d93ad / 7d7c84 / de8f6e),
+       pushed more vibrant. Revert this block to restore Amp Violet. */
+
     /* Primary brand */
-    --color-stage-indigo: #2a1a4a;
-    --color-amp-violet: #6c4fd8;
+    --color-stage-indigo: #0b4b5d; /* deep cyan — avatar / stat-tile accents */
+    --color-amp-violet: #1296b8; /* Pacific Cyan — primary (token name kept) */
+
+    /* Sidebar chrome — deep warm charcoal, a near-black extension of the Rosy
+       Granite neutral ramp. Neutral and recessive so the accents carry the color. */
+    --color-sidebar: #25242a;
 
     /* Accent */
-    --color-encore-coral: #ff6b5c;
-    --color-soundcheck-teal: #2dd4a8;
+    --color-encore-coral: #e8794c; /* Tangerine Dream — warm CTA pop */
+    --color-soundcheck-teal: #6fa84a; /* Sage Green — highlight / positive */
+    --color-stage-amber: #d6c63a; /* Pale Amber — support tint */
+    --color-stage-sage: #6fa84a; /* Sage Green — support tint */
 
-    /* Neutrals */
-    --color-canvas: #faf8f5;
-    --color-surface: #edeae3;
-    --color-muted: #5f5e5a;
-    --color-ink: #1c1b23;
+    /* Neutrals — warm gray (kept muted on purpose) */
+    --color-canvas: #f7f6f5;
+    --color-surface: #eceae9;
+    --color-muted: #7d7c84; /* Rosy Granite */
+    --color-ink: #1f1e22;
 
     /* Dark-mode chrome — deep indigo-tinted surfaces that pair with the
        Stage Indigo sidebar. Named for the stage rather than by lightness. */
