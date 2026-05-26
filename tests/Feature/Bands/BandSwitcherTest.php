@@ -116,4 +116,49 @@ class BandSwitcherTest extends TestCase
             ->get('/dashboard')
             ->assertRedirect('/bands/create');
     }
+
+    public function test_switching_remembers_the_band_on_the_user(): void
+    {
+        [$user, $current] = $this->userInBand();
+        $target = Band::factory()->create();
+        $user->bands()->attach($target, ['role' => 'member']);
+
+        $this->actingAs($user)
+            ->post("/bands/{$target->id}/set-active")
+            ->assertRedirect();
+
+        $this->assertSame($target->id, $user->fresh()->last_active_band_id);
+    }
+
+    public function test_last_active_band_is_restored_in_a_fresh_session(): void
+    {
+        $user = User::factory()->create();
+        $first = Band::factory()->create(['name' => 'Aardvarks']);
+        $later = Band::factory()->create(['name' => 'Zebras']);
+        $user->bands()->attach($first, ['role' => 'member']);
+        $user->bands()->attach($later, ['role' => 'owner']);
+
+        // They were last working in Zebras; a session with no active band (e.g.
+        // after a reseed) must restore that, not re-default to alphabetical.
+        $user->forceFill(['last_active_band_id' => $later->id])->save();
+
+        $this->actingAs($user)
+            ->get('/dashboard')
+            ->assertInertia(fn (Assert $page) => $page->where('activeBand.id', $later->id));
+    }
+
+    public function test_falls_back_to_first_band_when_remembered_band_is_no_longer_a_membership(): void
+    {
+        $user = User::factory()->create();
+        $own = Band::factory()->create(['name' => 'Aardvarks']);
+        $left = Band::factory()->create(['name' => 'Zebras']);
+        $user->bands()->attach($own, ['role' => 'owner']);
+
+        // Points at a band they've since left → ignored, fall back to first.
+        $user->forceFill(['last_active_band_id' => $left->id])->save();
+
+        $this->actingAs($user)
+            ->get('/dashboard')
+            ->assertInertia(fn (Assert $page) => $page->where('activeBand.id', $own->id));
+    }
 }

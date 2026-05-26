@@ -34,10 +34,20 @@ class BandSessionService
     /**
      * Make the given band active. Callers are responsible for confirming the
      * user belongs to the band first (see SetActiveBandController).
+     *
+     * The choice is mirrored onto the user's `last_active_band_id` so it
+     * survives a session reset (reseed, cleared cookies); the session stays the
+     * fast per-request source of truth.
      */
     public function set(Band $band): void
     {
         session([self::SESSION_KEY => $band->getKey()]);
+
+        $user = auth()->user();
+
+        if ($user && $user->last_active_band_id !== $band->getKey()) {
+            $user->forceFill(['last_active_band_id' => $band->getKey()])->save();
+        }
 
         $this->cachedBand = $band;
         $this->resolved = true;
@@ -78,8 +88,15 @@ class BandSessionService
     }
 
     /**
-     * Ensure the user has an active band, auto-selecting their first (by name)
-     * when the session has none or points at a band they've since left.
+     * Ensure the user has an active band, selecting one when the session has
+     * none or points at a band they've since left. Preference order:
+     *
+     *   1. the band they were last working in (`last_active_band_id`), so a
+     *      session reset doesn't lose their choice;
+     *   2. otherwise their first band by name.
+     *
+     * Both are scoped to current memberships, so a since-left or deleted band
+     * is skipped rather than surfaced.
      *
      * Returns false when the user belongs to no bands at all — the signal the
      * middleware uses to send them to band creation.
@@ -90,13 +107,19 @@ class BandSessionService
             return true;
         }
 
-        $first = $user->bands()->orderBy('bands.name')->first();
+        $band = null;
 
-        if (! $first) {
+        if ($user->last_active_band_id) {
+            $band = $user->bands()->whereKey($user->last_active_band_id)->first();
+        }
+
+        $band ??= $user->bands()->orderBy('bands.name')->first();
+
+        if (! $band) {
             return false;
         }
 
-        $this->set($first);
+        $this->set($band);
 
         return true;
     }
