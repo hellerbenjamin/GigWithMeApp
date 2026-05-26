@@ -19,7 +19,8 @@ const primaryNav = [
     { href: '/gigs', icon: 'pi pi-calendar', label: 'Gigs' },
     { href: '/venues', icon: 'pi pi-map-marker', label: 'Venues' },
     { href: '/band-members', icon: 'pi pi-users', label: 'Band Members' },
-    { href: '/music', icon: 'pi pi-volume-up', label: 'Music' },
+    // Music is hidden for now — re-add once the feature is built out.
+    // { href: '/music', icon: 'pi pi-volume-up', label: 'Music' },
 ];
 </script>
 

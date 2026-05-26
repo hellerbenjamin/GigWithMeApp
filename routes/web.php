@@ -12,7 +12,7 @@ use App\Http\Middleware\HasActiveBand;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', static fn () => Inertia::render('Welcome'));
+Route::redirect('/', '/login');
 
 // Magic-link gig RSVP — deliberately public (no auth/active-band): the token in
 // the URL is the authorization. Throttled since it's unauthenticated.
