@@ -3,10 +3,11 @@
 namespace App\Notifications;
 
 use App\Models\GigMemberResponse;
+use App\Notifications\Concerns\RoutesToSmsAndMail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use NotificationChannels\Twilio\TwilioChannel;
 use NotificationChannels\Twilio\TwilioSmsMessage;
 
 /**
@@ -16,17 +17,9 @@ use NotificationChannels\Twilio\TwilioSmsMessage;
  */
 class GigPollOpened extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, RoutesToSmsAndMail;
 
     public function __construct(public GigMemberResponse $response) {}
-
-    /**
-     * @return array<int, string>
-     */
-    public function via(object $notifiable): array
-    {
-        return [TwilioChannel::class];
-    }
 
     public function toTwilio(object $notifiable): TwilioSmsMessage
     {
@@ -38,5 +31,21 @@ class GigPollOpened extends Notification implements ShouldQueue
 
         return (new TwilioSmsMessage)
             ->content("{$gig->band->name}: can you make {$where} on {$when}? Tap to reply — {$link}");
+    }
+
+    public function toMail(object $notifiable): MailMessage
+    {
+        $gig = $this->response->gig->loadMissing('venue', 'band');
+
+        $where = $gig->venue?->name ?? ($gig->name ?: 'a gig');
+        $when = $gig->date->format('l, M j');
+        $link = route('rsvp.show', $this->response->token);
+
+        return (new MailMessage)
+            ->subject("{$gig->band->name}: can you make {$where} on {$gig->date->format('M j')}?")
+            ->greeting("Hi {$notifiable->name},")
+            ->line("{$gig->band->name} has a gig at {$where} on {$when}. Can you make it?")
+            ->action('Tap to reply', $link)
+            ->line('Thanks for keeping the band on the books!');
     }
 }

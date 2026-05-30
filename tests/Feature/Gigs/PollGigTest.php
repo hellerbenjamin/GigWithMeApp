@@ -12,6 +12,7 @@ use App\Notifications\GigPollOpened;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Inertia\Testing\AssertableInertia as Assert;
+use NotificationChannels\Twilio\TwilioChannel;
 use Tests\TestCase;
 
 class PollGigTest extends TestCase
@@ -72,6 +73,49 @@ class PollGigTest extends TestCase
         Notification::assertSentTo($alice, GigPollOpened::class);
         Notification::assertSentTo($bob, GigPollOpened::class);
         Notification::assertNotSentTo($owner, GigPollOpened::class);
+    }
+
+    public function test_poll_reaches_members_over_both_sms_and_email(): void
+    {
+        $band = $this->band();
+        $owner = $this->member($band, 'owner');
+        $both = $this->member($band); // has a phone and an email
+
+        // A member with an email but no phone — previously skipped entirely.
+        $emailOnly = User::factory()->create(['phone_number' => null]);
+        $emailOnly->bands()->attach($band, ['role' => 'member']);
+
+        $this->bookPoll($owner);
+
+        // The member with both contact methods is asked over SMS and email.
+        Notification::assertSentTo(
+            $both,
+            GigPollOpened::class,
+            fn ($notification, array $channels) => in_array(TwilioChannel::class, $channels, true)
+                && in_array('mail', $channels, true),
+        );
+
+        // The phone-less member is still reached — over email alone.
+        Notification::assertSentTo(
+            $emailOnly,
+            GigPollOpened::class,
+            fn ($notification, array $channels) => $channels === ['mail'],
+        );
+    }
+
+    public function test_poll_opened_email_renders_with_subject_and_rsvp_link(): void
+    {
+        $band = $this->band();
+        $owner = $this->member($band, 'owner');
+        $alice = $this->member($band);
+
+        $gig = $this->bookPoll($owner);
+        $response = $gig->memberResponses()->where('user_id', $alice->id)->sole();
+
+        $mail = (new GigPollOpened($response))->toMail($alice);
+
+        $this->assertStringContainsString($band->name, $mail->subject);
+        $this->assertSame(route('rsvp.show', $response->token), $mail->actionUrl);
     }
 
     public function test_everyone_available_confirms_the_gig(): void

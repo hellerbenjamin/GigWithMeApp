@@ -40,10 +40,10 @@ class GigBookingService
     }
 
     /**
-     * Mark a gig confirmed and SMS the band. Used by auto mode, by a poll where
-     * everyone's available, and by an admin's manual confirm. Members without a
-     * phone number can't get the Twilio SMS, so they're skipped rather than
-     * failing the send.
+     * Mark a gig confirmed and notify the band by SMS and/or email. Used by auto
+     * mode, by a poll where everyone's available, and by an admin's manual
+     * confirm. Each member is reached on whichever channels they have (phone for
+     * SMS, address for email); the notification skips anyone with neither.
      */
     public function confirm(Gig $gig): Gig
     {
@@ -51,16 +51,15 @@ class GigBookingService
             $gig->update(['status' => GigStatusEnum::Confirmed->value]);
         }
 
-        $members = $gig->band->users()->whereNotNull('phone_number')->get();
-        Notification::send($members, new GigConfirmed($gig));
+        Notification::send($gig->band->users()->get(), new GigConfirmed($gig));
 
         return $gig;
     }
 
     /**
      * Open the poll: seed a reply row for every current member (the creator is
-     * auto-marked available), then ask everyone still pending who can receive an
-     * SMS. A solo band is already fully available, so evaluatePoll confirms it.
+     * auto-marked available), then ask everyone still pending — by SMS and/or
+     * email. A solo band is already fully available, so evaluatePoll confirms it.
      */
     public function openPoll(Gig $gig, User $actor): Gig
     {
@@ -81,8 +80,7 @@ class GigBookingService
         $gig->load('memberResponses.user');
 
         $gig->memberResponses
-            ->filter(fn (GigMemberResponse $r) => $r->status === GigResponseStatusEnum::Pending
-                && filled($r->user->phone_number))
+            ->filter(fn (GigMemberResponse $r) => $r->status === GigResponseStatusEnum::Pending)
             ->each(fn (GigMemberResponse $r) => $r->user->notify(new GigPollOpened($r)));
 
         $this->evaluatePoll($gig);
@@ -94,8 +92,8 @@ class GigBookingService
      * Re-run a poll from scratch. Used when the gig's date changed, or when an
      * admin reopens a poll that closed needing attention: every reply is wiped
      * back to pending (a stale "yes" to the old plan shouldn't carry over), the
-     * needs-attention stamp is cleared, and everyone who can get an SMS is asked
-     * again. The actor is auto-marked available, exactly as on the first open.
+     * needs-attention stamp is cleared, and everyone is asked again by SMS and/or
+     * email. The actor is auto-marked available, exactly as on the first open.
      *
      * @param  User  $actor  the member re-polling; auto-marked available
      */
@@ -125,8 +123,7 @@ class GigBookingService
         $gig->load('memberResponses.user');
 
         $gig->memberResponses
-            ->filter(fn (GigMemberResponse $r) => $r->status === GigResponseStatusEnum::Pending
-                && filled($r->user->phone_number))
+            ->filter(fn (GigMemberResponse $r) => $r->status === GigResponseStatusEnum::Pending)
             ->each(fn (GigMemberResponse $r) => $r->user->notify(new GigPollOpened($r)));
 
         $this->evaluatePoll($gig);
@@ -198,13 +195,13 @@ class GigBookingService
     }
 
     /**
-     * SMS the band's owners and admins that a poll needs their decision.
+     * Notify the band's owners and admins, by SMS and/or email, that a poll
+     * needs their decision.
      */
     private function notifyAdmins(Gig $gig): void
     {
         $recipients = $gig->band->users()
             ->wherePivotIn('role', [BandUserRoleEnum::Owner->value, BandUserRoleEnum::Admin->value])
-            ->whereNotNull('phone_number')
             ->get();
 
         Notification::send($recipients, new GigPollNeedsAttention($gig));
