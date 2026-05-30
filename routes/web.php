@@ -6,6 +6,9 @@ use App\Http\Controllers\Bands\BandSettingsController;
 use App\Http\Controllers\Bands\SetActiveBandController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Gigs\GigController;
+use App\Http\Controllers\ManifestController;
+use App\Http\Controllers\Member\MemberHomeController;
+use App\Http\Controllers\Push\PushSubscriptionController;
 use App\Http\Controllers\Rsvp\RsvpController;
 use App\Http\Controllers\VenueController;
 use App\Http\Controllers\VenueImportController;
@@ -15,11 +18,32 @@ use Inertia\Inertia;
 
 Route::redirect('/', '/login');
 
+// Generic PWA manifest for non-personalized pages (login, marketing). Personal
+// member pages link the token-bearing manifest above instead.
+Route::get('/manifest.webmanifest', [ManifestController::class, 'generic'])->name('manifest');
+
 // Magic-link gig RSVP — deliberately public (no auth/active-band): the token in
 // the URL is the authorization. Throttled since it's unauthenticated.
 Route::middleware('throttle:30,1')->group(function () {
     Route::get('/rsvp/{token}', [RsvpController::class, 'show'])->name('rsvp.show');
     Route::post('/rsvp/{token}', [RsvpController::class, 'update'])->name('rsvp.update');
+    // Fired by the service worker from a push notification action (CSRF-exempt,
+    // token-authorized — see bootstrap/app.php). Returns JSON, not a redirect.
+    Route::post('/rsvp/{token}/reply', [RsvpController::class, 'reply'])->name('rsvp.reply');
+});
+
+// Login-free member surfaces, keyed by the durable per-member push_token: the
+// personal home (also the installed PWA's start_url + manifest) and the push
+// subscribe/unsubscribe endpoints. The token is the authorization; throttled
+// since it's unauthenticated.
+Route::middleware('throttle:60,1')->group(function () {
+    Route::get('/m/{pushToken}', [MemberHomeController::class, 'show'])->name('member.home');
+    Route::get('/m/{pushToken}/manifest.webmanifest', [ManifestController::class, 'member'])
+        ->name('member.manifest');
+    Route::post('/push/subscribe/{pushToken}', [PushSubscriptionController::class, 'storeByToken'])
+        ->name('push.subscribe.token');
+    Route::delete('/push/subscribe/{pushToken}', [PushSubscriptionController::class, 'destroyByToken'])
+        ->name('push.unsubscribe.token');
 });
 
 // Band creation sits outside the HasActiveBand group on purpose — a user with
@@ -34,6 +58,11 @@ Route::middleware('auth')->group(function () {
 // band is resolved (and auto-selected) by HasActiveBand.
 Route::middleware(['auth', HasActiveBand::class])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Push opt-in for logged-in owners/admins — keyed off the session user
+    // rather than a token.
+    Route::post('/push/subscribe', [PushSubscriptionController::class, 'store'])->name('push.subscribe');
+    Route::delete('/push/subscribe', [PushSubscriptionController::class, 'destroy'])->name('push.unsubscribe');
 
     Route::post('/bands/{band}/set-active', SetActiveBandController::class)
         ->name('bands.set-active');

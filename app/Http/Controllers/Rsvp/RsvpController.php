@@ -7,6 +7,7 @@ use App\Enums\GigStatusEnum;
 use App\Http\Controllers\Controller;
 use App\Models\GigMemberResponse;
 use App\Services\GigBookingService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -32,6 +33,9 @@ class RsvpController extends Controller
 
         return Inertia::render('Rsvp/Show', [
             'token' => $token,
+            // The member's durable push token powers login-free push opt-in
+            // right here on the RSVP page (see PushOptIn.vue).
+            'pushToken' => $response->user->ensurePushToken(),
             'memberName' => $response->user->name,
             'bandName' => $gig->band->name,
             'gig' => [
@@ -76,5 +80,31 @@ class RsvpController extends Controller
         );
 
         return back()->with('success', 'Thanks — your reply is in.');
+    }
+
+    /**
+     * Record a reply from a push-notification action button. Same funnel as
+     * {@see self::update()}, but called by the service worker (no page), so it
+     * answers JSON and records the 'push' channel.
+     */
+    public function reply(Request $request, string $token, GigBookingService $booking): JsonResponse
+    {
+        $data = $request->validate([
+            'available' => ['required', 'boolean'],
+        ]);
+
+        $response = GigMemberResponse::with('gig')->where('token', $token)->firstOrFail();
+
+        if ($response->gig->status !== GigStatusEnum::Pending) {
+            return response()->json(['settled' => true]);
+        }
+
+        $booking->recordResponse(
+            $response,
+            $data['available'] ? GigResponseStatusEnum::Available : GigResponseStatusEnum::Unavailable,
+            'push',
+        );
+
+        return response()->json(['ok' => true]);
     }
 }

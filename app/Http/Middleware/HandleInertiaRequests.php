@@ -52,6 +52,10 @@ class HandleInertiaRequests extends Middleware
                 'warning' => fn () => $request->session()->get('warning'),
                 'info' => fn () => $request->session()->get('info'),
             ],
+            // VAPID public key for the browser's PushManager.subscribe(). Public
+            // by design — the private key stays server-side. null disables the
+            // push opt-in UI gracefully when keys aren't configured.
+            'webpushKey' => config('webpush.vapid.public_key'),
             // The active band plus the user's full band list power the
             // BandSwitcher and every band-scoped screen. Resolved by the
             // HasActiveBand middleware before this runs at response time.

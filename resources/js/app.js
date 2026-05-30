@@ -38,3 +38,12 @@ createInertiaApp({
         color: '#6c4fd8', // Amp Violet
     },
 });
+
+// Register the push/PWA service worker at the origin root so its scope covers
+// every page (public RSVP, member home, the app). Best-effort — unsupported
+// browsers just don't get push.
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+    });
+}

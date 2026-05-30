@@ -3,16 +3,17 @@
 namespace App\Notifications;
 
 use App\Models\Gig;
-use App\Notifications\Concerns\RoutesToSmsAndMail;
+use App\Notifications\Concerns\RoutesGigNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use NotificationChannels\Twilio\TwilioSmsMessage;
+use NotificationChannels\WebPush\WebPushMessage;
 
 class GigConfirmed extends Notification implements ShouldQueue
 {
-    use Queueable, RoutesToSmsAndMail;
+    use Queueable, RoutesGigNotification;
 
     public function __construct(public Gig $gig) {}
 
@@ -47,5 +48,25 @@ class GigConfirmed extends Notification implements ShouldQueue
             ->greeting("Hi {$notifiable->name},")
             ->line("{$gig->band->name}'s gig at {$where} on {$when}{$start} is confirmed. See you there!")
             ->action('View the gig', route('gigs.show', $gig));
+    }
+
+    /**
+     * Get the web push representation of the notification.
+     */
+    public function toWebPush(object $notifiable, Notification $notification): WebPushMessage
+    {
+        $gig = $this->gig->loadMissing('venue', 'band');
+
+        $where = $gig->venue?->name ?? $gig->name;
+        $when = $gig->date->format('D, M j');
+
+        return (new WebPushMessage)
+            ->title("{$gig->band->name}: gig confirmed")
+            ->body("{$where} on {$when} is locked in. See you there!")
+            ->icon('/icons/icon-192.png')
+            ->badge('/icons/badge-96.png')
+            ->tag("gig-{$gig->id}")
+            ->renotify()
+            ->data(['url' => route('gigs.show', $gig)]);
     }
 }

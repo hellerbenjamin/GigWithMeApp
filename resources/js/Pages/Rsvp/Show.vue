@@ -13,9 +13,12 @@ export default {
 <script setup>
 import { computed } from 'vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
+import PushOptIn from '../../components/PushOptIn.vue';
 
 const props = defineProps({
     token: { type: String, required: true },
+    // Durable per-member token for login-free push opt-in on this page.
+    pushToken: { type: String, default: null },
     memberName: { type: String, required: true },
     bandName: { type: String, required: true },
     gig: { type: Object, required: true },
@@ -130,5 +133,11 @@ function reply(available) {
                 @click="reply(false)"
             />
         </div>
+    </div>
+
+    <!-- Push opt-in: once they've engaged with one gig, offer instant alerts for
+         the next ones — no login, tied to their durable token. -->
+    <div v-if="pushToken && answered" class="mt-6">
+        <PushOptIn :push-token="pushToken" compact />
     </div>
 </template>

@@ -11,6 +11,7 @@ export default {
 <script setup>
 import { computed, ref } from 'vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import PushOptIn from '../../components/PushOptIn.vue';
 
 const props = defineProps({
     // The active band's current settings, from BandSettingsController@edit.
@@ -62,6 +63,7 @@ const currentYear = new Date().getFullYear();
 // panel in the content column below.
 const sections = [
     { key: 'band', icon: 'pi pi-id-card', label: 'Band profile' },
+    { key: 'notifications', icon: 'pi pi-bell', label: 'Notifications' },
 ];
 const activeSection = ref('band');
 
@@ -304,6 +306,20 @@ function submit() {
                 <Button type="submit" label="Save changes" :loading="form.processing" />
             </div>
                 </form>
+            </section>
+
+            <!-- Notifications -->
+            <section v-show="activeSection === 'notifications'" class="mx-auto max-w-2xl">
+                <div class="mb-6">
+                    <h3 class="font-display text-2xl font-bold tracking-tight">Notifications</h3>
+                    <p class="mt-1 text-sm text-ink/60 dark:text-canvas/55">
+                        Turn on push to get gig alerts on this device, instead of a text.
+                    </p>
+                </div>
+
+                <div class="rounded-2xl border border-surface bg-white p-6 shadow-sm dark:border-white/10 dark:bg-riser sm:p-8">
+                    <PushOptIn />
+                </div>
             </section>
         </div>
     </div>
