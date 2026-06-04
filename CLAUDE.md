@@ -14,6 +14,10 @@ is not the app name and should stay.
 
 ## Conventions
 
+- **Never commit without explicit permission.** Make and stage changes, but do
+  not run `git commit` until I ask for it in that moment — a prior "commit" is
+  not standing approval for later changes. When work is ready, say so and wait.
+  (Commits still go straight to `master`, no feature branches.)
 - **Plans and context go in `docs/`.** When we write up implementation plans,
   design notes, or background/context for the codebase, add them as Markdown
   files in the `docs/` folder so they live alongside the code.
