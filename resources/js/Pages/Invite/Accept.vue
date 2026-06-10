@@ -38,6 +38,18 @@ const bandLabel = computed(() => {
     return `${names.slice(0, -1).join(', ')}, and ${names[names.length - 1]}`;
 });
 
+// A member already in another band arrives with a number on file. Show it back
+// to them, formatted, so they can confirm or update it instead of retyping.
+const hasNumberOnFile = computed(() => Boolean(props.phoneNumber));
+
+const formattedPhone = computed(() => {
+    const raw = props.phoneNumber;
+    if (!raw) return '';
+    // Pretty-print a US +1XXXXXXXXXX as (XXX) XXX-XXXX; otherwise show as stored.
+    const match = raw.match(/^\+1(\d{3})(\d{3})(\d{4})$/);
+    return match ? `(${match[1]}) ${match[2]}-${match[3]}` : raw;
+});
+
 function submit() {
     form.post(`/invite/${props.token}`, { preserveScroll: true });
 }
@@ -67,8 +79,18 @@ function submit() {
                 </span>
             </label>
 
+            <p
+                v-if="hasNumberOnFile && !form.opt_in"
+                class="mt-3 text-sm text-ink/70 dark:text-canvas/65"
+            >
+                We have your mobile number as <strong>{{ formattedPhone }}</strong>.
+                Tick the box to confirm or update it.
+            </p>
+
             <div v-if="form.opt_in" class="mt-4 space-y-1.5">
-                <label for="phone" class="block text-sm font-medium">Mobile number</label>
+                <label for="phone" class="block text-sm font-medium">
+                    {{ hasNumberOnFile ? 'Confirm or update your mobile number' : 'Mobile number' }}
+                </label>
                 <InputText
                     id="phone"
                     v-model="form.phone_number"
@@ -77,6 +99,12 @@ function submit() {
                     autocomplete="tel"
                     placeholder="(555) 123-4567"
                 />
+                <small
+                    v-if="hasNumberOnFile && !form.errors.phone_number"
+                    class="text-muted dark:text-canvas/45"
+                >
+                    This is the number we have on file. Edit it if it's changed.
+                </small>
                 <small v-if="form.errors.phone_number" class="text-encore-coral">
                     {{ form.errors.phone_number }}
                 </small>

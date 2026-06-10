@@ -47,6 +47,34 @@ class AcceptInviteTest extends TestCase
         $this->get('/invite/nope')->assertNotFound();
     }
 
+    public function test_acceptance_page_surfaces_a_number_already_on_file(): void
+    {
+        // A member re-invited to another band arrives with a confirmed number;
+        // the page shows it back so they can confirm or update rather than retype.
+        $user = $this->invitedMember();
+        $user->update(['phone_number' => '+15551234567']);
+
+        $this->get("/invite/{$user->invite_token}")
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('phoneNumber', '+15551234567')
+            );
+    }
+
+    public function test_a_member_can_update_the_number_on_file_when_opting_in(): void
+    {
+        $user = $this->invitedMember();
+        $user->update(['phone_number' => '+15551234567']);
+
+        $this->post("/invite/{$user->invite_token}", [
+            'name' => $user->name,
+            'opt_in' => true,
+            'phone_number' => '(555) 987-6543',
+        ])->assertRedirect('/login')->assertSessionHas('success');
+
+        $this->assertSame('+15559876543', $user->fresh()->phone_number);
+    }
+
     public function test_opting_in_records_consent_and_normalizes_the_number(): void
     {
         $user = $this->invitedMember();
