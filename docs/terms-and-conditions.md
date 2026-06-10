@@ -57,7 +57,7 @@ These messaging terms apply to the SMS/text-message program operated through the
 Service.
 
 - **Program description.** GigWithMe sends transactional, gig-related text
-  messages to band members — for example, gig confirmations, availability-poll
+  messages to band members. For example, gig confirmations, availability-poll
   invitations, reminders when a poll needs attention, and account or test
   messages you trigger. We do **not** send marketing or promotional text
   messages through this program.
@@ -144,7 +144,7 @@ us in the 12 months before the claim, or USD $100.
 
 You agree to indemnify and hold harmless GigWithMe from any claims, damages, or
 expenses (including reasonable attorneys' fees) arising from your use of the
-Service, your content, or your violation of these Terms or applicable law —
+Service, your content, or your violation of these Terms or applicable law,
 including any claim that you sent messages to a recipient who did not consent.
 
 ## 14. Changes to These Terms

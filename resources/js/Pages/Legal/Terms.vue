@@ -105,7 +105,7 @@ const lastUpdated = 'June 9, 2026';
             <ul>
                 <li>
                     <strong>Program description.</strong> GigWithMe sends transactional,
-                    gig-related text messages to band members — for example, gig
+                    gig-related text messages to band members. For example, gig
                     confirmations, availability-poll invitations, reminders when a poll
                     needs attention, and account or test messages you trigger. We do
                     <strong>not</strong> send marketing or promotional text messages
@@ -226,7 +226,7 @@ const lastUpdated = 'June 9, 2026';
                 You agree to indemnify and hold harmless GigWithMe from any claims,
                 damages, or expenses (including reasonable attorneys' fees) arising from
                 your use of the Service, your content, or your violation of these Terms
-                or applicable law — including any claim that you sent messages to a
+                or applicable law, including any claim that you sent messages to a
                 recipient who did not consent.
             </p>
 

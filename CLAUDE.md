@@ -21,6 +21,9 @@ is not the app name and should stay.
 - **Plans and context go in `docs/`.** When we write up implementation plans,
   design notes, or background/context for the codebase, add them as Markdown
   files in the `docs/` folder so they live alongside the code.
+- **No em dashes in copywriting.** In user-facing copy (legal pages, marketing,
+  UI text, notification wording), avoid the em dash (—). Rephrase, or use a
+  comma, colon, or parentheses instead.
 
 ## Theme
 

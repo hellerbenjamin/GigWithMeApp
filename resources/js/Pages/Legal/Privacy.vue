@@ -35,7 +35,7 @@ const lastUpdated = 'June 3, 2026';
             <p>
                 GigWithMe helps a band rally its people and keep its dates on the
                 books. This policy explains what we collect, how we use it, and the
-                choices you have — including how text-message (SMS) consent works.
+                choices you have, including how text-message (SMS) consent works.
                 It covers the GigWithMe app at <strong>gigwithme.app</strong> and the
                 marketing site at <strong>gigwith.me</strong>.
             </p>
@@ -78,7 +78,7 @@ const lastUpdated = 'June 3, 2026';
 
             <h2>How we use your information</h2>
             <ul>
-                <li>To provide the service — managing bands, gigs, venues, and availability.</li>
+                <li>To provide the service: managing bands, gigs, venues, and availability.</li>
                 <li>To send you the gig notifications you've asked for, by your chosen channels.</li>
                 <li>To secure your account and operate, maintain, and improve the app.</li>
                 <li>To comply with our legal obligations.</li>
@@ -97,7 +97,7 @@ const lastUpdated = 'June 3, 2026';
             <ul>
                 <li>
                     An admin invites a member by email. <strong>No text is sent at
-                    this point</strong> — adding a member does not turn on texting.
+                    this point.</strong> Adding a member does not turn on texting.
                 </li>
                 <li>
                     The member opens their invitation and, on the acceptance page,
@@ -114,7 +114,7 @@ const lastUpdated = 'June 3, 2026';
             </ul>
             <p>
                 <strong>Message types &amp; frequency.</strong> Messages are tied to
-                your band's activity — for example, an availability poll when a gig is
+                your band's activity. For example, an availability poll when a gig is
                 being booked, a confirmation when it's locked in, and reminders. There
                 is no fixed schedule; volume depends on how often your band books gigs.
             </p>
@@ -126,7 +126,7 @@ const lastUpdated = 'June 3, 2026';
                 <strong>Opting out.</strong> Reply <strong>STOP</strong> to any message
                 to unsubscribe at any time; we'll stop texting that number. Reply
                 <strong>HELP</strong> for help. Opting out of SMS doesn't remove you
-                from your band — you can still get notified by email or web push.
+                from your band; you can still get notified by email or web push.
             </p>
 
             <h2>Email &amp; push notifications</h2>
@@ -143,8 +143,8 @@ const lastUpdated = 'June 3, 2026';
                 what they need to do their job:
             </p>
             <ul>
-                <li><strong>Twilio</strong> — to deliver SMS messages.</li>
-                <li><strong>Mailgun</strong> — to deliver email.</li>
+                <li><strong>Twilio</strong>, to deliver SMS messages.</li>
+                <li><strong>Mailgun</strong>, to deliver email.</li>
             </ul>
 
             <h2>Data retention</h2>
