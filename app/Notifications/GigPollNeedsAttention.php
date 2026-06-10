@@ -8,7 +8,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use NotificationChannels\Twilio\TwilioSmsMessage;
+use Illuminate\Notifications\Messages\VonageMessage;
 use NotificationChannels\WebPush\WebPushMessage;
 
 /**
@@ -22,7 +22,7 @@ class GigPollNeedsAttention extends Notification implements ShouldQueue
 
     public function __construct(public Gig $gig) {}
 
-    public function toTwilio(object $notifiable): TwilioSmsMessage
+    public function toVonage(object $notifiable): VonageMessage
     {
         $gig = $this->gig->loadMissing('venue', 'band');
 
@@ -30,8 +30,8 @@ class GigPollNeedsAttention extends Notification implements ShouldQueue
         $when = $gig->date->format('D, M j');
         $link = route('gigs.edit', $gig);
 
-        return (new TwilioSmsMessage)
-            ->content("{$gig->band->name}: the band replied about {$where} on {$when}, but not everyone can make it. Your call — {$link}");
+        return (new VonageMessage)
+            ->content("{$gig->band->name}: the band replied about {$where} on {$when}, but not everyone can make it. Your call: {$link}");
     }
 
     public function toMail(object $notifiable): MailMessage

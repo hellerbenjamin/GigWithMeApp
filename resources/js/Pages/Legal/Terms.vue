@@ -4,7 +4,7 @@ import GigWithMeLogo from '../../components/GigWithMeLogo.vue';
 import { useDarkMode } from '../../composables/useDarkMode';
 
 // Public, login-free page — companion to the Privacy Policy, linked from the SMS
-// opt-in screen and surfaced for Twilio A2P registration, so it must not depend
+// opt-in screen and surfaced for Vonage / carrier A2P registration, so it must not depend
 // on AppLayout/auth.
 const { isDark } = useDarkMode();
 
@@ -168,7 +168,7 @@ const lastUpdated = 'June 9, 2026';
             <h2>7. Third-Party Services</h2>
             <p>
                 The Service relies on third-party providers to function, including but
-                not limited to SMS delivery (<strong>Twilio</strong>), email delivery
+                not limited to SMS delivery (<strong>Vonage</strong>), email delivery
                 (<strong>Mailgun</strong>), and web-push delivery. Your use of the
                 Service may be subject to those providers' terms, and we are not
                 responsible for their acts or omissions.

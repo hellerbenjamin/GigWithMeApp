@@ -12,7 +12,6 @@ use App\Notifications\GigPollOpened;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Inertia\Testing\AssertableInertia as Assert;
-use NotificationChannels\Twilio\TwilioChannel;
 use Tests\TestCase;
 
 class PollGigTest extends TestCase
@@ -91,7 +90,7 @@ class PollGigTest extends TestCase
         Notification::assertSentTo(
             $both,
             GigPollOpened::class,
-            fn ($notification, array $channels) => in_array(TwilioChannel::class, $channels, true)
+            fn ($notification, array $channels) => in_array('vonage', $channels, true)
                 && in_array('mail', $channels, true),
         );
 

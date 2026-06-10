@@ -8,7 +8,6 @@ use App\Models\User;
 use App\Notifications\GigPollOpened;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
-use NotificationChannels\Twilio\TwilioChannel;
 use NotificationChannels\WebPush\WebPushChannel;
 use Tests\TestCase;
 
@@ -67,7 +66,7 @@ class WebPushTest extends TestCase
             $alice,
             GigPollOpened::class,
             fn ($notification, array $channels) => in_array(WebPushChannel::class, $channels, true)
-                && ! in_array(TwilioChannel::class, $channels, true)
+                && ! in_array('vonage', $channels, true)
                 && in_array('mail', $channels, true),
         );
     }
@@ -90,7 +89,7 @@ class WebPushTest extends TestCase
         Notification::assertSentTo(
             $bob,
             GigPollOpened::class,
-            fn ($notification, array $channels) => in_array(TwilioChannel::class, $channels, true)
+            fn ($notification, array $channels) => in_array('vonage', $channels, true)
                 && in_array('mail', $channels, true)
                 && ! in_array(WebPushChannel::class, $channels, true),
         );

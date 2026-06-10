@@ -47,10 +47,10 @@ class User extends Authenticatable
     /**
      * Route SMS notifications to the user's phone number.
      *
-     * Twilio expects E.164 (e.g. +15551234567); numbers should be stored that
+     * Vonage expects E.164 (e.g. +15551234567); numbers should be stored that
      * way, or normalized before send.
      */
-    public function routeNotificationForTwilio(): ?string
+    public function routeNotificationForVonage(): ?string
     {
         return $this->phone_number;
     }

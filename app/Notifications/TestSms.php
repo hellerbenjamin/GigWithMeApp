@@ -2,12 +2,11 @@
 
 namespace App\Notifications;
 
+use Illuminate\Notifications\Messages\VonageMessage;
 use Illuminate\Notifications\Notification;
-use NotificationChannels\Twilio\TwilioChannel;
-use NotificationChannels\Twilio\TwilioSmsMessage;
 
 /**
- * A throwaway SMS for smoke-testing Twilio credentials locally. Deliberately
+ * A throwaway SMS for smoke-testing Vonage credentials locally. Deliberately
  * NOT queued so {@see \App\Console\Commands\SendTestSms} can verify a send
  * synchronously. Not used by the app itself.
  */
@@ -20,11 +19,13 @@ class TestSms extends Notification
      */
     public function via(object $notifiable): array
     {
-        return [TwilioChannel::class];
+        return ['vonage'];
     }
 
-    public function toTwilio(object $notifiable): TwilioSmsMessage
+    public function toVonage(object $notifiable): VonageMessage
     {
-        return (new TwilioSmsMessage)->content($this->body);
+        // unicode() so emoji and other multibyte characters send intact rather
+        // than as a corrupted GSM-7 message.
+        return (new VonageMessage)->content($this->body)->unicode();
     }
 }

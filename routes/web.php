@@ -19,7 +19,7 @@ use Inertia\Inertia;
 Route::redirect('/', '/login');
 
 // Public legal pages — login-free and linked from the SMS opt-in screen; also
-// the URLs we give Twilio for A2P registration.
+// the URLs we give our SMS provider (Vonage) for A2P registration.
 Route::get('/privacy', static fn () => Inertia::render('Legal/Privacy'))->name('privacy');
 Route::get('/terms', static fn () => Inertia::render('Legal/Terms'))->name('terms');
 

@@ -199,6 +199,11 @@ Captured from the build so far — the gaps I flagged, in rough priority order:
 
 ## RCS notes (for phase 3)
 
+> **Provider note.** These notes were written when SMS ran on Twilio; we have
+> since switched to **Vonage** (see [`sms-service.md`](./sms-service.md)). The
+> Twilio Content API specifics below need revisiting — Vonage offers RCS through
+> its Messages API, so re-scope this phase against Vonage before starting.
+
 - RCS gives tappable suggested-reply buttons whose taps return a **structured
   payload** — no free-text parsing. Ideal for the poll.
 - Prerequisites: a registered RBM / RCS sender + brand verification through

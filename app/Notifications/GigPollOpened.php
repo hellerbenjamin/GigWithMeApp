@@ -8,7 +8,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use NotificationChannels\Twilio\TwilioSmsMessage;
+use Illuminate\Notifications\Messages\VonageMessage;
 use NotificationChannels\WebPush\WebPushMessage;
 
 /**
@@ -22,7 +22,7 @@ class GigPollOpened extends Notification implements ShouldQueue
 
     public function __construct(public GigMemberResponse $response) {}
 
-    public function toTwilio(object $notifiable): TwilioSmsMessage
+    public function toVonage(object $notifiable): VonageMessage
     {
         $gig = $this->response->gig->loadMissing('venue', 'band');
 
@@ -30,8 +30,8 @@ class GigPollOpened extends Notification implements ShouldQueue
         $when = $gig->date->format('D, M j');
         $link = route('rsvp.show', $this->response->token);
 
-        return (new TwilioSmsMessage)
-            ->content("{$gig->band->name}: can you make {$where} on {$when}? Tap to reply — {$link}");
+        return (new VonageMessage)
+            ->content("{$gig->band->name}: can you make {$where} on {$when}? Tap to reply: {$link}");
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -64,7 +64,7 @@ class GigPollOpened extends Notification implements ShouldQueue
 
         return (new WebPushMessage)
             ->title("{$gig->band->name}: can you make it?")
-            ->body("{$where} on {$when} — can you play?")
+            ->body("{$where} on {$when}. Can you play?")
             ->icon('/icons/icon-192.png')
             ->badge('/icons/badge-96.png')
             ->tag("gig-{$gig->id}")

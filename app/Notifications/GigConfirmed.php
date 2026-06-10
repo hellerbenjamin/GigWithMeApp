@@ -8,7 +8,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use NotificationChannels\Twilio\TwilioSmsMessage;
+use Illuminate\Notifications\Messages\VonageMessage;
 use NotificationChannels\WebPush\WebPushMessage;
 
 class GigConfirmed extends Notification implements ShouldQueue
@@ -20,7 +20,7 @@ class GigConfirmed extends Notification implements ShouldQueue
     /**
      * Get the SMS representation of the notification.
      */
-    public function toTwilio(object $notifiable): TwilioSmsMessage
+    public function toVonage(object $notifiable): VonageMessage
     {
         $gig = $this->gig->loadMissing('venue', 'band');
 
@@ -28,7 +28,7 @@ class GigConfirmed extends Notification implements ShouldQueue
         $when = $gig->date->format('D, M j');
         $start = $gig->start_time ? " at {$gig->start_time}" : '';
 
-        return (new TwilioSmsMessage)
+        return (new VonageMessage)
             ->content("{$gig->band->name}: your gig at {$where} on {$when}{$start} is confirmed.");
     }
 

@@ -1,8 +1,8 @@
 # Web Push notifications
 
 GigWithMe sends gig notifications over **web push** as a third channel alongside
-SMS (Twilio) and email (Mailgun). The goal: engaged members get free, instant,
-actionable alerts, and the Twilio bill tapers off — without anyone being forced
+SMS (Vonage) and email (Mailgun). The goal: engaged members get free, instant,
+actionable alerts, and the Vonage bill tapers off — without anyone being forced
 to log in.
 
 ## Channel selection
@@ -18,7 +18,7 @@ member:
 So a subscribed member gets push + email; an unsubscribed one is unchanged
 (SMS + email). The three gig notifications (`GigConfirmed`, `GigPollOpened`,
 `GigPollNeedsAttention`) each implement `toWebPush()` next to their existing
-`toTwilio()` / `toMail()`.
+`toVonage()` / `toMail()`.
 
 `GigPollOpened` carries **"I'm in" / "Can't make it" actions** — the service
 worker records the reply via the token-authorized `/rsvp/{token}/reply` endpoint

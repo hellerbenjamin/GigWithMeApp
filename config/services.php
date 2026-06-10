@@ -42,4 +42,15 @@ return [
         ],
     ],
 
+    // SMS — see docs/sms-service.md. 'key'/'secret' authenticate the Vonage
+    // API; 'sms_from' is the sender ID or number the channel sends from.
+    // 'debug_to', when set, makes gigwithme:test-sms route everything to one
+    // number for local testing (not used by the app's own notifications).
+    'vonage' => [
+        'key' => env('VONAGE_KEY'),
+        'secret' => env('VONAGE_SECRET'),
+        'sms_from' => env('VONAGE_SMS_FROM'),
+        'debug_to' => env('VONAGE_DEBUG_TO'),
+    ],
+
 ];

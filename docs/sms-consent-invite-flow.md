@@ -2,7 +2,7 @@
 
 ## Why this exists
 
-GigWithMe sends gig notifications by SMS via Twilio (see
+GigWithMe sends gig notifications by SMS via Vonage (see
 [`sms-service.md`](./sms-service.md)). US A2P 10DLC registration requires that
 every recipient has given **explicit, prior consent** to be texted — and that
 consent comes from the person who owns the phone, not from someone adding them.
@@ -17,7 +17,7 @@ exactly this pattern. This doc designs the flow that closes the gap.
 - **Consent is individual.** Only the phone's owner can opt in. An admin cannot
   consent on a member's behalf, and a checkbox the admin ticks does not count.
 - **No SMS before consent.** Adding a member creates a *pending invite*, not a
-  textable contact. The Twilio channel stays off until the member opts in.
+  textable contact. The Vonage channel stays off until the member opts in.
 - **Auditable.** We record who consented, when, to what wording, and how.
 - **Revocable.** STOP opts a number out immediately; HELP returns help text.
 
@@ -35,7 +35,7 @@ exactly this pattern. This doc designs the flow that closes the gap.
    event.
 4. **Consent recorded** — we persist the timestamp, the confirmed number, the
    exact opt-in language shown, and the source. The member moves to `active`.
-   Only now does `via()` permit `TwilioChannel`.
+   Only now does `via()` permit the `vonage` channel.
 5. **Opt-out / help** — an inbound webhook handles `STOP` (disable SMS to that
    number, set opt-out timestamp) and `HELP` (reply with help text). STOP flips
    the consent flag off without deleting the member.
@@ -69,14 +69,14 @@ Add to `users` (or a dedicated `sms_consents` table if we want full history):
 app but still SMS-off if they declined the opt-in box (they'd then get email /
 web push only, which the existing channel-selection already supports).
 
-## Still needed for Twilio submission
+## Still needed for carrier / Vonage submission
 
 - A **privacy policy** page (e.g. `/privacy`) covering SMS: that we don't sell
   numbers, the message types, frequency, and STOP/HELP. Link it from the
   acceptance page.
 - The acceptance page should be **publicly reachable** (behind the signed link)
-  so Twilio reviewers can see the opt-in screen / screenshot it.
-- `STOP` / `HELP` inbound handling wired to the Twilio number's webhook.
+  so reviewers can see the opt-in screen / screenshot it.
+- `STOP` / `HELP` inbound handling wired to the Vonage number's webhook.
 
 ## Open questions
 

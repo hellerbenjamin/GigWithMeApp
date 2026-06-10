@@ -5,7 +5,7 @@
 > This Markdown file is the canonical source for the public Terms page rendered
 > at `/terms` (`resources/js/Pages/Legal/Terms.vue`). Keep the two in sync, and
 > bump the "Last updated" date in both when the Terms change. The **SMS
-> Messaging Terms** section is written to satisfy carrier / Twilio
+> Messaging Terms** section is written to satisfy carrier / Vonage
 > messaging-service verification requirements; keep it intact and accurate.
 
 These Terms & Conditions ("Terms") govern your access to and use of GigWithMe
@@ -96,7 +96,7 @@ submit any content, including the personal contact details of band members.
 ## 7. Third-Party Services
 
 The Service relies on third-party providers to function, including but not limited
-to SMS delivery (**Twilio**), email delivery (**Mailgun**), and web-push
+to SMS delivery (**Vonage**), email delivery (**Mailgun**), and web-push
 delivery. Your use of the Service may be subject to those providers' terms, and we
 are not responsible for their acts or omissions.
 

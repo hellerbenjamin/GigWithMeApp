@@ -4,7 +4,7 @@ import GigWithMeLogo from '../../components/GigWithMeLogo.vue';
 import { useDarkMode } from '../../composables/useDarkMode';
 
 // Public, login-free page — linked from the SMS opt-in screen and required for
-// Twilio A2P registration, so it must not depend on AppLayout/auth.
+// Vonage / carrier A2P registration, so it must not depend on AppLayout/auth.
 const { isDark } = useDarkMode();
 
 // Keep in sync with the date in the heading below when the policy changes.
@@ -143,7 +143,7 @@ const lastUpdated = 'June 3, 2026';
                 what they need to do their job:
             </p>
             <ul>
-                <li><strong>Twilio</strong>, to deliver SMS messages.</li>
+                <li><strong>Vonage</strong>, to deliver SMS messages.</li>
                 <li><strong>Mailgun</strong>, to deliver email.</li>
             </ul>
 
