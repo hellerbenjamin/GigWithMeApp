@@ -142,9 +142,11 @@ const lastUpdated = 'June 9, 2026';
                     <a href="mailto:support@gigwithme.app">support@gigwithme.app</a>.
                 </li>
                 <li>
-                    <strong>Supported carriers.</strong> Carriers are not liable for
+                    <strong>Carrier disclaimer.</strong> Carriers are not liable for
                     delayed or undelivered messages. Message delivery is subject to
                     effective transmission by your mobile carrier and is not guaranteed.
+                    Carriers, including but not limited to T-Mobile, are not responsible
+                    for delayed or undelivered messages.
                 </li>
                 <li>
                     <strong>Privacy.</strong> Information you provide in connection with

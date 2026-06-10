@@ -77,9 +77,10 @@ Service.
   re-enable SMS in your settings.
 - **Help (HELP).** For help, reply **HELP** to any message or contact us at
   **support@gigwithme.app**.
-- **Supported carriers.** Carriers are not liable for delayed or undelivered
+- **Carrier disclaimer.** Carriers are not liable for delayed or undelivered
   messages. Message delivery is subject to effective transmission by your mobile
-  carrier and is not guaranteed.
+  carrier and is not guaranteed. Carriers, including but not limited to T-Mobile,
+  are not responsible for delayed or undelivered messages.
 - **Privacy.** Information you provide in connection with SMS messaging is handled
   in accordance with our [Privacy Policy](/privacy). We do not sell or share
   mobile opt-in data or phone numbers with third parties or affiliates for their
