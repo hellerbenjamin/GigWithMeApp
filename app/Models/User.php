@@ -31,6 +31,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'last_active_band_id' => 'integer',
+            'sms_consent_at' => 'datetime',
+            'sms_opted_out_at' => 'datetime',
         ];
     }
 
@@ -53,6 +55,32 @@ class User extends Authenticatable
     public function routeNotificationForVonage(): ?string
     {
         return $this->phone_number;
+    }
+
+    /**
+     * Whether we may text this member: they opted in themselves (sms_consent_at)
+     * and haven't since opted out via STOP (sms_opted_out_at). Gates the Vonage
+     * channel so adding a member never starts SMS on its own — only the member's
+     * own opt-in does. See docs/sms-consent-invite-flow.md.
+     */
+    public function hasSmsConsent(): bool
+    {
+        return $this->sms_consent_at !== null && $this->sms_opted_out_at === null;
+    }
+
+    /**
+     * The member's pending-invite token, minted when a brand-new account is
+     * added to a band. It's what the emailed acceptance link carries so the
+     * member can confirm their own number and opt in without a login; cleared
+     * once they accept.
+     */
+    public function ensureInviteToken(): string
+    {
+        if (! $this->invite_token) {
+            $this->forceFill(['invite_token' => Str::random(64)])->save();
+        }
+
+        return $this->invite_token;
     }
 
     /**

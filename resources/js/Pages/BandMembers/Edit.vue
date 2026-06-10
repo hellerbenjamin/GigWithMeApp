@@ -12,7 +12,7 @@ export default {
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const props = defineProps({
-    // The member being edited: { id, name, email, phoneNumber, role }.
+    // The member being edited: { id, name, email, phoneNumber, smsConsent, role }.
     member: { type: Object, required: true },
     // Role options as { value, label }, from BandUserRoleEnum.
     roles: { type: Array, default: () => [] },
@@ -21,7 +21,6 @@ const props = defineProps({
 const form = useForm({
     name: props.member.name ?? '',
     email: props.member.email ?? '',
-    phone_number: props.member.phoneNumber ?? '',
     role: props.member.role,
 });
 
@@ -31,7 +30,6 @@ function submit() {
             ...data,
             name: data.name.trim(),
             email: data.email.trim(),
-            phone_number: data.phone_number.trim(),
         }))
         .put(`/band-members/${props.member.id}`);
 }
@@ -83,18 +81,17 @@ function submit() {
             </div>
 
             <div class="space-y-1.5">
-                <label for="phone_number" class="block text-sm font-medium">
-                    Phone number <span class="font-normal text-muted dark:text-canvas/45">(optional)</span>
-                </label>
-                <InputText
-                    id="phone_number"
-                    v-model="form.phone_number"
-                    type="tel"
-                    fluid
-                    placeholder="(555) 123-4567"
-                    :invalid="!!form.errors.phone_number"
-                />
-                <small v-if="form.errors.phone_number" class="text-cancelled">{{ form.errors.phone_number }}</small>
+                <span class="block text-sm font-medium">Phone &amp; texts</span>
+                <p class="rounded-lg bg-surface px-3 py-2.5 text-sm text-ink/70 dark:bg-white/5 dark:text-canvas/70">
+                    <template v-if="member.smsConsent">
+                        Texts on at <strong>{{ member.phoneNumber }}</strong>.
+                    </template>
+                    <template v-else>
+                        No text opt-in yet.
+                    </template>
+                    Members set and confirm their own number from their invitation, so it
+                    isn't editable here.
+                </p>
             </div>
 
             <div class="space-y-1.5">

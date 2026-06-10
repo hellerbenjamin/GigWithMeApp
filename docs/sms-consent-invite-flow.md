@@ -7,10 +7,11 @@ GigWithMe sends gig notifications by SMS via Vonage (see
 every recipient has given **explicit, prior consent** to be texted — and that
 consent comes from the person who owns the phone, not from someone adding them.
 
-Today there is a compliance gap: an admin types a band member's `phone_number`
-on the member form and SMS starts flowing automatically (see
-`RoutesGigNotification::via()`). The recipient never opted in. Carriers reject
-exactly this pattern. This doc designs the flow that closes the gap.
+This used to be a compliance gap: an admin typed a band member's `phone_number`
+on the member form and SMS started flowing automatically. The recipient never
+opted in, which is exactly the pattern carriers reject. The flow below now
+closes that gap. **Status:** the core is implemented (see *Implementation
+status* at the end); the STOP/HELP inbound webhook is the remaining piece.
 
 ## Principles
 
@@ -69,14 +70,30 @@ Add to `users` (or a dedicated `sms_consents` table if we want full history):
 app but still SMS-off if they declined the opt-in box (they'd then get email /
 web push only, which the existing channel-selection already supports).
 
-## Still needed for carrier / Vonage submission
+## Implementation status
 
-- A **privacy policy** page (e.g. `/privacy`) covering SMS: that we don't sell
-  numbers, the message types, frequency, and STOP/HELP. Link it from the
-  acceptance page.
-- The acceptance page should be **publicly reachable** (behind the signed link)
-  so reviewers can see the opt-in screen / screenshot it.
-- `STOP` / `HELP` inbound handling wired to the Vonage number's webhook.
+Done (see the SMS-provider switch + invite-flow commits):
+
+- Migration `…_add_sms_consent_and_invite_to_users_table`: `invite_token`,
+  `sms_consent_at`, `sms_consent_text`, `sms_opted_out_at` on `users`.
+- `User::hasSmsConsent()` and the gate in `RoutesGigNotification::via()` — SMS
+  only when a phone is on file, `sms_consent_at` is set, and `sms_opted_out_at`
+  is null. The admin add/edit forms no longer collect a phone number.
+- `BandInvitation` notification (email) + `BandMemberService::addMember()` sends
+  it to brand-new (and not-yet-accepted) members; established members are not
+  re-invited.
+- `AcceptInviteController` + `Invite/Accept.vue` at `/invite/{token}`
+  (public, throttled): the member confirms their own number and ticks the
+  unticked opt-in box; submitting records consent (timestamp + the exact wording
+  from `App\Support\SmsConsent::OPT_IN_TEXT`) and spends the one-time token.
+- `/privacy` and `/terms` are live and linked from the acceptance page.
+- Covered by `tests/Feature/Invites/AcceptInviteTest` and the updated
+  `BandMembers` tests.
+
+Still needed:
+
+- `STOP` / `HELP` inbound handling wired to the Vonage number's webhook (sets
+  `sms_opted_out_at` on STOP, replies help text on HELP).
 
 ## Open questions
 

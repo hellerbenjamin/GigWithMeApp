@@ -19,7 +19,6 @@ defineProps({
 const form = useForm({
     name: '',
     email: '',
-    phone_number: '',
     role: 'member',
 });
 
@@ -29,7 +28,6 @@ function submit() {
             ...data,
             name: data.name.trim(),
             email: data.email.trim(),
-            phone_number: data.phone_number.trim(),
         }))
         .post('/band-members');
 }
@@ -42,8 +40,8 @@ function submit() {
         <div class="mb-6">
             <h2 class="font-display text-3xl font-bold tracking-tight">Add a band member</h2>
             <p class="mt-1 text-sm text-ink/60 dark:text-canvas/55">
-                Add someone to the roster by email. If they already have a GigWithMe account
-                we'll link it up — otherwise we'll create one they can claim later.
+                Add someone to the roster by email. We'll send them an invitation to set up
+                their gig alerts — including adding their own number for texts, if they want.
             </p>
         </div>
 
@@ -79,25 +77,6 @@ function submit() {
                     :invalid="!!form.errors.email"
                 />
                 <small v-if="form.errors.email" class="text-cancelled">{{ form.errors.email }}</small>
-            </div>
-
-            <div class="space-y-1.5">
-                <label for="phone_number" class="block text-sm font-medium">
-                    Phone number <span class="font-normal text-muted dark:text-canvas/45">(optional)</span>
-                </label>
-                <InputText
-                    id="phone_number"
-                    v-model="form.phone_number"
-                    type="tel"
-                    fluid
-                    placeholder="(555) 123-4567"
-                    :invalid="!!form.errors.phone_number"
-                />
-                <small class="block text-muted dark:text-canvas/45">
-                    Used when we create a new account. If they're already on GigWithMe, their
-                    own number stays.
-                </small>
-                <small v-if="form.errors.phone_number" class="text-cancelled">{{ form.errors.phone_number }}</small>
             </div>
 
             <div class="space-y-1.5">

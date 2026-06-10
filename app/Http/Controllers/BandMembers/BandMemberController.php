@@ -76,7 +76,7 @@ class BandMemberController extends Controller
         );
 
         $message = $created
-            ? "{$user->name} has an account and is on the roster — they can set a password via \"forgot password\"."
+            ? "{$user->name} is on the roster. We emailed them an invitation to set up their gig alerts."
             : "{$user->name} is on the roster.";
 
         return to_route('band-members.index')->with('success', $message);
@@ -98,6 +98,7 @@ class BandMemberController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'phoneNumber' => $user->phone_number,
+                'smsConsent' => $user->hasSmsConsent(),
                 'role' => $band->getUserRole($user)->value,
             ],
             'roles' => $this->roleOptions(),

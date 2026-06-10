@@ -5,14 +5,17 @@ namespace App\Services;
 use App\Enums\BandUserRoleEnum;
 use App\Models\Band;
 use App\Models\User;
+use App\Notifications\BandInvitation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
- * Roster operations — who belongs to a band and in what role. There's no invite
- * / email-sending flow yet, so a member is added by email: an existing account
- * is reused, and a brand-new one is created on the spot when the email is
- * unknown. Controllers stay thin wrappers over this.
+ * Roster operations — who belongs to a band and in what role. A member is added
+ * by email: an existing account is reused, and a brand-new one is created on the
+ * spot when the email is unknown. New (and not-yet-accepted) members are emailed
+ * an invitation to set up their notification preferences and opt in to SMS
+ * themselves — adding a member never collects a phone number or starts texting.
+ * See docs/sms-consent-invite-flow.md. Controllers stay thin wrappers over this.
  */
 class BandMemberService
 {
@@ -22,25 +25,35 @@ class BandMemberService
      * a random password — they can reset it later) and then attached. Atomic:
      * a created-but-unattached user never escapes the transaction.
      *
+     * A brand-new account, or an existing one that hasn't accepted a prior
+     * invite yet, is emailed an invitation to the acceptance page (queued, so
+     * it's dispatched after the transaction commits). Established members are
+     * simply attached.
+     *
      * Callers must have confirmed the email isn't already on the roster (see
      * StoreBandMemberRequest), so the pivot insert won't hit the unique key.
      *
-     * @param  array{name: string, email: string, phone_number?: string|null, role: string}  $attributes
-     * @return array{user: User, created: bool}  created = a new account was made
+     * @param  array{name: string, email: string, role: string}  $attributes
+     * @return array{user: User, created: bool} created = a new account was made
      */
     public function addMember(Band $band, array $attributes): array
     {
-        return DB::transaction(function () use ($band, $attributes): array {
+        ['user' => $user, 'created' => $created] = DB::transaction(function () use ($band, $attributes): array {
             $existing = User::where('email', $attributes['email'])->first();
 
             $user = $existing ?? User::create([
                 'name' => $attributes['name'],
                 'email' => $attributes['email'],
-                'phone_number' => $attributes['phone_number'] ?? null,
                 // A throwaway password keeps the NOT NULL column happy; the new
                 // member sets their own via password reset on first sign-in.
                 'password' => Str::password(),
             ]);
+
+            // Brand-new accounts haven't accepted, so mint the invite token now;
+            // the emailed link carries it to the acceptance page.
+            if ($existing === null) {
+                $user->ensureInviteToken();
+            }
 
             $band->users()->attach($user, [
                 'role' => BandUserRoleEnum::from($attributes['role'])->value,
@@ -48,15 +61,25 @@ class BandMemberService
 
             return ['user' => $user, 'created' => $existing === null];
         });
+
+        // Invite new accounts, and existing ones still carrying an unaccepted
+        // invite token (so a second band re-nudges them). Established members
+        // who've already accepted are left alone.
+        if ($created || $user->invite_token !== null) {
+            $user->notify(new BandInvitation($band));
+        }
+
+        return ['user' => $user, 'created' => $created];
     }
 
     /**
-     * Update a roster member: their shared account profile (name / email /
-     * phone) plus their role within this band. Unlike adding, this is an
-     * explicit edit by a manager, so it does overwrite the user's own account
-     * fields. Atomic so a half-applied edit never escapes.
+     * Update a roster member: their shared account profile (name / email) plus
+     * their role within this band. Unlike adding, this is an explicit edit by a
+     * manager, so it does overwrite the user's own account fields. The phone
+     * number is deliberately not editable here — it's member-owned and only set
+     * via the opt-in flow. Atomic so a half-applied edit never escapes.
      *
-     * @param  array{name: string, email: string, phone_number?: string|null, role: string}  $attributes
+     * @param  array{name: string, email: string, role: string}  $attributes
      */
     public function updateMember(Band $band, User $user, array $attributes): void
     {
@@ -64,7 +87,6 @@ class BandMemberService
             $user->update([
                 'name' => $attributes['name'],
                 'email' => $attributes['email'],
-                'phone_number' => $attributes['phone_number'] ?? null,
             ]);
 
             $band->users()->updateExistingPivot($user->getKey(), [

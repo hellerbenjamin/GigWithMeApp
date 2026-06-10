@@ -4,7 +4,9 @@ namespace Tests\Feature\BandMembers;
 
 use App\Models\Band;
 use App\Models\User;
+use App\Notifications\BandInvitation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -81,38 +83,40 @@ class CreateBandMemberTest extends TestCase
         ]);
     }
 
-    public function test_a_phone_number_is_stored_on_a_new_account(): void
+    public function test_a_new_account_is_invited_and_has_no_phone(): void
     {
+        Notification::fake();
         [$owner] = $this->userInBand();
 
         $this->actingAs($owner)->post('/band-members', [
             'name' => 'Sam Rivera',
             'email' => 'sam@band.test',
-            'phone_number' => '  (555) 123-4567  ',
             'role' => 'member',
         ])->assertRedirect('/band-members');
 
-        // Stored, with surrounding whitespace trimmed.
-        $this->assertSame('(555) 123-4567', User::where('email', 'sam@band.test')->value('phone_number'));
+        $created = User::where('email', 'sam@band.test')->first();
+        $this->assertNotNull($created);
+        // Adding a member never collects a phone or starts texting; the member
+        // sets their own number when they accept the emailed invitation.
+        $this->assertNull($created->phone_number);
+        $this->assertNotNull($created->invite_token);
+        Notification::assertSentTo($created, BandInvitation::class);
     }
 
-    public function test_an_existing_users_phone_number_is_left_untouched(): void
+    public function test_an_established_member_is_not_re_invited(): void
     {
+        Notification::fake();
         [$owner] = $this->userInBand();
-        $existing = User::factory()->create([
-            'email' => 'jordan@band.test',
-            'phone_number' => '(111) 111-1111',
-        ]);
+        // A factory user is fully onboarded (consented, no pending invite token).
+        $existing = User::factory()->create(['email' => 'jordan@band.test']);
 
         $this->actingAs($owner)->post('/band-members', [
             'name' => 'Jordan Reyes',
             'email' => 'jordan@band.test',
-            'phone_number' => '(999) 999-9999',
             'role' => 'admin',
         ])->assertRedirect('/band-members');
 
-        // Their own number wins, just like their name.
-        $this->assertSame('(111) 111-1111', $existing->fresh()->phone_number);
+        Notification::assertNotSentTo($existing, BandInvitation::class);
     }
 
     public function test_a_person_already_on_the_roster_is_rejected(): void

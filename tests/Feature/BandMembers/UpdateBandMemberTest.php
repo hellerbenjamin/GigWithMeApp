@@ -52,15 +52,13 @@ class UpdateBandMemberTest extends TestCase
         $this->actingAs($owner)->put("/band-members/{$member->id}", [
             'name' => '  Jordan Reyes  ',
             'email' => 'Jordan@Band.test',
-            'phone_number' => '  (555) 123-4567  ',
             'role' => 'admin',
         ])->assertRedirect('/band-members')->assertSessionHas('success');
 
         $member->refresh();
-        // Name/phone trimmed, email lower-cased.
+        // Name trimmed, email lower-cased.
         $this->assertSame('Jordan Reyes', $member->name);
         $this->assertSame('jordan@band.test', $member->email);
-        $this->assertSame('(555) 123-4567', $member->phone_number);
         // Pivot role updated.
         $this->assertDatabaseHas('band_user', [
             'band_id' => $band->id,
@@ -69,20 +67,22 @@ class UpdateBandMemberTest extends TestCase
         ]);
     }
 
-    public function test_phone_number_can_be_cleared(): void
+    public function test_admin_edit_leaves_the_members_phone_untouched(): void
     {
         [$owner, $band] = $this->userInBand();
-        $member = User::factory()->create(['phone_number' => '(555) 000-0000']);
+        // The phone is member-owned (set via the opt-in flow); an admin edit must
+        // not change it, even if a phone_number is smuggled into the request.
+        $member = User::factory()->create(['phone_number' => '+15550000000']);
         $member->bands()->attach($band, ['role' => 'member']);
 
         $this->actingAs($owner)->put("/band-members/{$member->id}", [
-            'name' => $member->name,
+            'name' => 'Renamed',
             'email' => $member->email,
-            'phone_number' => '',
+            'phone_number' => '+19999999999',
             'role' => 'member',
         ])->assertRedirect('/band-members');
 
-        $this->assertNull($member->fresh()->phone_number);
+        $this->assertSame('+15550000000', $member->fresh()->phone_number);
     }
 
     public function test_keeping_the_same_email_is_allowed(): void

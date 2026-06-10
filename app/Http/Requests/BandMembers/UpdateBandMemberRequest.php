@@ -34,14 +34,13 @@ class UpdateBandMemberRequest extends FormRequest
 
     /**
      * Normalise the same way the store request does, so edits and adds store
-     * the email/name/phone in a consistent shape.
+     * the email/name in a consistent shape.
      */
     protected function prepareForValidation(): void
     {
         $this->merge([
             'name' => is_string($this->name) ? trim($this->name) : $this->name,
             'email' => is_string($this->email) ? Str::of($this->email)->trim()->lower()->value() : $this->email,
-            'phone_number' => is_string($this->phone_number) ? trim($this->phone_number) : $this->phone_number,
         ]);
     }
 
@@ -62,8 +61,6 @@ class UpdateBandMemberRequest extends FormRequest
                 // users, but the member's own current email is fine to keep.
                 Rule::unique('users', 'email')->ignore($member->getKey()),
             ],
-
-            'phone_number' => ['nullable', 'string', 'max:255'],
 
             'role' => ['required', Rule::enum(BandUserRoleEnum::class)],
         ];

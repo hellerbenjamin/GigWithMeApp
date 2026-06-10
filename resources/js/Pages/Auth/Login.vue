@@ -14,11 +14,15 @@ export default {
 </script>
 
 <script setup>
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 
 defineProps({
     status: { type: String, default: '' },
 });
+
+// Surfaces post-redirect notices like the invite-accepted confirmation.
+const flashSuccess = computed(() => usePage().props.flash?.success ?? null);
 
 const form = useForm({
     email: '',
@@ -38,6 +42,9 @@ function submit() {
 
     <Message v-if="status" severity="success" :closable="false" class="mb-5">
         {{ status }}
+    </Message>
+    <Message v-else-if="flashSuccess" severity="success" :closable="false" class="mb-5">
+        {{ flashSuccess }}
     </Message>
 
     <form class="space-y-5" @submit.prevent="submit">
