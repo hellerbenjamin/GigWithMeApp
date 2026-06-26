@@ -13,6 +13,12 @@
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (event) => event.waitUntil(self.clients.claim()));
 
+// Chrome requires a fetch handler for PWA installability. Pass all requests
+// straight to the network — no caching strategy needed yet.
+self.addEventListener('fetch', (event) => {
+    event.respondWith(fetch(event.request));
+});
+
 self.addEventListener('push', (event) => {
     let payload = {};
     try {

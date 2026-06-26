@@ -44,6 +44,7 @@ async function install() {
         if (outcome === 'accepted') {
             isInstalled.value = true;
             installPrompt.value = null;
+            window.__pwaInstallPrompt = null;
         }
     } finally {
         installing.value = false;
@@ -84,13 +85,15 @@ onMounted(() => {
         envState.value = 'ready';
     }
 
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        installPrompt.value = e;
-    });
+    // app.js captures beforeinstallprompt before Vue mounts; read it here.
+    if (window.__pwaInstallPrompt) {
+        installPrompt.value = window.__pwaInstallPrompt;
+    }
+
     window.addEventListener('appinstalled', () => {
         isInstalled.value = true;
         installPrompt.value = null;
+        window.__pwaInstallPrompt = null;
     });
 });
 </script>

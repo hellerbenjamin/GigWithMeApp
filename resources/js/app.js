@@ -1,3 +1,11 @@
+// Capture the PWA install prompt as early as possible — it fires before Vue
+// mounts, so components read window.__pwaInstallPrompt instead of listening.
+window.__pwaInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    window.__pwaInstallPrompt = e;
+});
+
 import { createApp, h } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
