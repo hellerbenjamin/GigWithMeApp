@@ -245,7 +245,7 @@ const progressPct = computed(() => {
                         <p class="flex items-center gap-1.5 truncate text-sm font-medium">
                             {{ member.name }}
                             <span
-                                v-if="member.critical"
+                                v-if="canManage && member.critical"
                                 class="rounded-full bg-encore-coral/12 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-encore-coral"
                             >Critical</span>
                         </p>

@@ -112,7 +112,7 @@ const roleStyles = {
                         {{ member.roleLabel }}
                     </span>
                     <span
-                        v-if="member.critical"
+                        v-if="canManage && member.critical"
                         class="rounded-full bg-encore-coral/12 px-2.5 py-1 text-xs font-semibold text-encore-coral"
                         title="This member must be available for the gig to confirm automatically"
                     >
