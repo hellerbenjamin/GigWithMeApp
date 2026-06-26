@@ -7,6 +7,7 @@ use App\Http\Controllers\Bands\SetActiveBandController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Gigs\GigController;
 use App\Http\Controllers\Invites\AcceptInviteController;
+use App\Http\Controllers\Invites\NotificationSetupController;
 use App\Http\Controllers\ManifestController;
 use App\Http\Controllers\Member\MemberHomeController;
 use App\Http\Controllers\Push\PushSubscriptionController;
@@ -29,11 +30,12 @@ Route::get('/terms', static fn () => Inertia::render('Legal/Terms'))->name('term
 Route::get('/manifest.webmanifest', [ManifestController::class, 'generic'])->name('manifest');
 
 // Magic-link member invite acceptance — public (no auth): the token in the URL
-// is the authorization. This is where a member confirms their own number and
-// opts in to SMS, so it must be reachable login-free. Throttled.
+// is the authorization. After accepting, members are guided to set up push
+// notifications before signing in. Throttled.
 Route::middleware('throttle:30,1')->group(function () {
     Route::get('/invite/{token}', [AcceptInviteController::class, 'show'])->name('invite.accept');
     Route::post('/invite/{token}', [AcceptInviteController::class, 'store'])->name('invite.submit');
+    Route::get('/invite/setup/{pushToken}', [NotificationSetupController::class, 'show'])->name('invite.setup');
 });
 
 // Magic-link gig RSVP — deliberately public (no auth/active-band): the token in

@@ -6,16 +6,11 @@ use App\Models\Band;
 use App\Models\Gig;
 use App\Models\User;
 use App\Notifications\GigConfirmed;
-use App\Support\SmsConsent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
+use NotificationChannels\WebPush\WebPushChannel;
 use Tests\TestCase;
 
-/**
- * The login-free invite acceptance: a member confirms their own number and opts
- * in to SMS, which is the only place an SMS consent record is created. See
- * docs/sms-consent-invite-flow.md.
- */
 class AcceptInviteTest extends TestCase
 {
     use RefreshDatabase;
@@ -37,8 +32,9 @@ class AcceptInviteTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Invite/Accept')
                 ->where('memberName', $user->name)
-                ->where('optInText', SmsConsent::OPT_IN_TEXT)
                 ->where('bandNames', ['The Night Owls'])
+                ->missing('optInText')
+                ->missing('phoneNumber')
             );
     }
 
@@ -47,97 +43,83 @@ class AcceptInviteTest extends TestCase
         $this->get('/invite/nope')->assertNotFound();
     }
 
-    public function test_acceptance_page_surfaces_a_number_already_on_file(): void
-    {
-        // A member re-invited to another band arrives with a confirmed number;
-        // the page shows it back so they can confirm or update rather than retype.
-        $user = $this->invitedMember();
-        $user->update(['phone_number' => '+15551234567']);
-
-        $this->get("/invite/{$user->invite_token}")
-            ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page
-                ->where('phoneNumber', '+15551234567')
-            );
-    }
-
-    public function test_a_member_can_update_the_number_on_file_when_opting_in(): void
-    {
-        $user = $this->invitedMember();
-        $user->update(['phone_number' => '+15551234567']);
-
-        $this->post("/invite/{$user->invite_token}", [
-            'name' => $user->name,
-            'opt_in' => true,
-            'phone_number' => '(555) 987-6543',
-        ])->assertRedirect('/login')->assertSessionHas('success');
-
-        $this->assertSame('+15559876543', $user->fresh()->phone_number);
-    }
-
-    public function test_opting_in_records_consent_and_normalizes_the_number(): void
+    public function test_acceptance_records_name_and_redirects_to_setup(): void
     {
         $user = $this->invitedMember();
 
-        $this->post("/invite/{$user->invite_token}", [
-            'name' => 'Jordan Reyes',
-            'opt_in' => true,
-            'phone_number' => '(555) 123-4567',
-        ])->assertRedirect('/login')->assertSessionHas('success');
+        $pushToken = $user->ensurePushToken();
+
+        $this->post("/invite/{$user->invite_token}", ['name' => 'Jordan Reyes'])
+            ->assertRedirect("/invite/setup/{$pushToken}");
 
         $user->refresh();
         $this->assertSame('Jordan Reyes', $user->name);
-        $this->assertSame('+15551234567', $user->phone_number);
-        $this->assertNotNull($user->sms_consent_at);
-        $this->assertSame(SmsConsent::OPT_IN_TEXT, $user->sms_consent_text);
-        $this->assertNull($user->sms_opted_out_at);
-        // One-time link is spent.
         $this->assertNull($user->invite_token);
-        $this->assertTrue($user->hasSmsConsent());
     }
 
-    public function test_accepting_without_opting_in_records_no_consent(): void
+    public function test_acceptance_mints_a_push_token_and_redirects_to_setup(): void
+    {
+        $user = $this->invitedMember();
+        $this->assertNull($user->push_token);
+
+        $response = $this->post("/invite/{$user->invite_token}", ['name' => $user->name]);
+
+        $pushToken = $user->fresh()->push_token;
+        $this->assertNotNull($pushToken);
+        $response->assertRedirect("/invite/setup/{$pushToken}");
+    }
+
+    public function test_name_is_required(): void
     {
         $user = $this->invitedMember();
 
-        $this->post("/invite/{$user->invite_token}", [
-            'name' => $user->name,
-            'opt_in' => false,
-        ])->assertRedirect('/login');
+        $this->post("/invite/{$user->invite_token}", ['name' => ''])
+            ->assertSessionHasErrors('name');
 
-        $user->refresh();
-        $this->assertNull($user->phone_number);
-        $this->assertNull($user->sms_consent_at);
-        $this->assertNull($user->invite_token);
-        $this->assertFalse($user->hasSmsConsent());
-    }
-
-    public function test_opting_in_requires_a_phone_number(): void
-    {
-        $user = $this->invitedMember();
-
-        $this->post("/invite/{$user->invite_token}", [
-            'name' => $user->name,
-            'opt_in' => true,
-        ])->assertSessionHasErrors('phone_number');
-
-        // Nothing recorded, token still live.
-        $this->assertNull($user->fresh()->sms_consent_at);
+        // Token not consumed on validation failure.
         $this->assertNotNull($user->fresh()->invite_token);
     }
 
-    public function test_sms_channel_is_gated_on_consent(): void
+    public function test_setup_page_renders_for_a_valid_push_token(): void
     {
-        // via() doesn't touch the gig, so an unsaved one is enough.
+        $user = User::factory()->create();
+        $pushToken = $user->ensurePushToken();
+
+        $this->get("/invite/setup/{$pushToken}")
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Invite/Setup')
+                ->where('pushToken', $pushToken)
+            );
+    }
+
+    public function test_setup_page_404s_for_unknown_push_token(): void
+    {
+        $this->get('/invite/setup/nope')->assertNotFound();
+    }
+
+    public function test_push_channel_used_when_subscribed(): void
+    {
         $notification = new GigConfirmed(new Gig);
 
-        $consented = User::factory()->create(['phone_number' => '+15551112222']);
-        $this->assertContains('vonage', $notification->via($consented));
+        $subscriber = User::factory()->create();
+        $subscriber->updatePushSubscription('https://push.example.com/sub', 'p256dh-key', 'auth-key');
+        $channels = $notification->via($subscriber);
 
-        $noConsent = User::factory()->withoutSmsConsent()->create(['phone_number' => '+15551112222']);
-        $this->assertNotContains('vonage', $notification->via($noConsent));
+        $this->assertContains(WebPushChannel::class, $channels);
+        $this->assertContains('mail', $channels);
+        $this->assertNotContains('vonage', $channels);
+    }
 
-        $optedOut = User::factory()->smsOptedOut()->create(['phone_number' => '+15551112222']);
-        $this->assertNotContains('vonage', $notification->via($optedOut));
+    public function test_email_is_fallback_when_no_push_subscription(): void
+    {
+        $notification = new GigConfirmed(new Gig);
+
+        $user = User::factory()->create(['phone_number' => '+15551112222']);
+        $channels = $notification->via($user);
+
+        $this->assertNotContains(WebPushChannel::class, $channels);
+        $this->assertNotContains('vonage', $channels);
+        $this->assertContains('mail', $channels);
     }
 }

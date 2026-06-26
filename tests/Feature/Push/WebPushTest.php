@@ -71,7 +71,7 @@ class WebPushTest extends TestCase
         );
     }
 
-    public function test_an_unsubscribed_member_still_gets_sms_and_mail(): void
+    public function test_an_unsubscribed_member_falls_back_to_mail(): void
     {
         Notification::fake();
 
@@ -89,8 +89,8 @@ class WebPushTest extends TestCase
         Notification::assertSentTo(
             $bob,
             GigPollOpened::class,
-            fn ($notification, array $channels) => in_array('vonage', $channels, true)
-                && in_array('mail', $channels, true)
+            fn ($notification, array $channels) => in_array('mail', $channels, true)
+                && ! in_array('vonage', $channels, true)
                 && ! in_array(WebPushChannel::class, $channels, true),
         );
     }
