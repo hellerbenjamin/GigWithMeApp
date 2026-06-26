@@ -84,6 +84,22 @@ function submit() {
 
         <Button type="submit" label="Log in" fluid :loading="form.processing" />
 
+        <div class="relative my-1">
+            <div class="absolute inset-0 flex items-center">
+                <div class="w-full border-t border-black/10 dark:border-white/10" />
+            </div>
+            <div class="relative flex justify-center">
+                <span class="bg-canvas px-3 text-xs text-ink/40 dark:bg-riser dark:text-canvas/35">or</span>
+            </div>
+        </div>
+
+        <Link
+            href="/login/link"
+            class="block text-center text-sm font-medium text-amp-violet hover:underline"
+        >
+            Email me a sign-in link
+        </Link>
+
         <p class="text-center text-sm text-muted dark:text-canvas/60">
             New to GigWithMe?
             <Link href="/register" class="font-medium text-amp-violet hover:underline">

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -41,6 +42,9 @@ class AcceptInviteController extends Controller
         $user->save();
 
         $pushToken = $user->ensurePushToken();
+
+        Auth::login($user);
+        $request->session()->regenerate();
 
         return redirect()->route('invite.setup', $pushToken);
     }

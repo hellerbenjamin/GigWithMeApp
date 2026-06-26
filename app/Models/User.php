@@ -14,7 +14,7 @@ use Illuminate\Support\Str;
 use NotificationChannels\WebPush\HasPushSubscriptions;
 
 #[Fillable(['name', 'email', 'phone_number', 'avatar_path', 'timezone', 'password'])]
-#[Hidden(['password', 'remember_token', 'push_token'])]
+#[Hidden(['password', 'remember_token', 'push_token', 'magic_link_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
@@ -33,6 +33,7 @@ class User extends Authenticatable
             'last_active_band_id' => 'integer',
             'sms_consent_at' => 'datetime',
             'sms_opted_out_at' => 'datetime',
+            'magic_link_expires_at' => 'datetime',
         ];
     }
 
@@ -107,5 +108,42 @@ class User extends Authenticatable
     public function hasPushSubscription(): bool
     {
         return $this->pushSubscriptions()->exists();
+    }
+
+    /**
+     * Mint a one-time magic link token valid for 15 minutes. Replaces any
+     * existing token so only the most recent link works.
+     */
+    public function generateMagicToken(): string
+    {
+        $token = Str::random(64);
+
+        $this->forceFill([
+            'magic_link_token' => $token,
+            'magic_link_expires_at' => now()->addMinutes(15),
+        ])->save();
+
+        return $token;
+    }
+
+    /**
+     * Whether the given token matches and hasn't expired.
+     */
+    public function isValidMagicToken(string $token): bool
+    {
+        return $this->magic_link_token === $token
+            && $this->magic_link_expires_at !== null
+            && $this->magic_link_expires_at->isFuture();
+    }
+
+    /**
+     * Consume the token after use so it can't be replayed.
+     */
+    public function consumeMagicToken(): void
+    {
+        $this->forceFill([
+            'magic_link_token' => null,
+            'magic_link_expires_at' => null,
+        ])->save();
     }
 }

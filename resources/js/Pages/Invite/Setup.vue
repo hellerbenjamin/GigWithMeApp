@@ -133,10 +133,10 @@ onMounted(() => {
             </div>
 
             <a
-                href="/login"
+                href="/dashboard"
                 class="block text-center text-sm text-ink/40 hover:text-ink/60 dark:text-canvas/35 dark:hover:text-canvas/55"
             >
-                {{ subscribed ? 'Continue to sign in' : 'Skip for now, take me to sign in' }}
+                {{ subscribed ? 'Continue to the app' : 'Skip for now, take me to the app' }}
             </a>
         </div>
     </template>
@@ -187,7 +187,7 @@ onMounted(() => {
             </div>
 
             <a
-                href="/login"
+                href="/dashboard"
                 class="block text-center text-sm text-ink/40 hover:text-ink/60 dark:text-canvas/35 dark:hover:text-canvas/55"
             >
                 Skip for now, take me to sign in
@@ -222,7 +222,7 @@ onMounted(() => {
             </div>
 
             <a
-                href="/login"
+                href="/dashboard"
                 class="block text-center text-sm text-ink/40 hover:text-ink/60 dark:text-canvas/35 dark:hover:text-canvas/55"
             >
                 Skip for now, take me to sign in
@@ -270,7 +270,7 @@ onMounted(() => {
             </div>
 
             <a
-                href="/login"
+                href="/dashboard"
                 class="block text-center text-sm text-ink/40 hover:text-ink/60 dark:text-canvas/35 dark:hover:text-canvas/55"
             >
                 Skip for now, take me to sign in
@@ -288,7 +288,7 @@ onMounted(() => {
             </p>
         </div>
         <div class="mt-6">
-            <a href="/login" class="block">
+            <a href="/dashboard" class="block">
                 <Button label="Continue to sign in" fluid />
             </a>
         </div>
