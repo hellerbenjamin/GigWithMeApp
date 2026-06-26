@@ -146,6 +146,7 @@ const progressPct = computed(() => {
             </div>
 
             <Link
+                v-if="canManage"
                 :href="`/gigs/${gig.id}/edit`"
                 class="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-surface bg-white px-4 py-2.5 text-sm font-semibold shadow-sm transition-all hover:shadow-md active:scale-[0.98] dark:border-white/10 dark:bg-riser"
             >
