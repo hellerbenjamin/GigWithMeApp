@@ -8,13 +8,15 @@ export default {
 </script>
 
 <script setup>
-import { Head, useForm } from '@inertiajs/vue3';
+import { ref } from 'vue';
+import { Head, router, useForm } from '@inertiajs/vue3';
 
 const props = defineProps({
     channels: { type: Array, default: () => ['email'] },
     days: { type: Array, default: () => [7, 1] },
     availableDays: { type: Array, default: () => [7, 3, 1, 0] },
     hasPush: { type: Boolean, default: false },
+    calendarUrl: { type: String, default: '' },
 });
 
 const form = useForm({
@@ -48,6 +50,23 @@ function dayLabel(day) {
 
 function submit() {
     form.put('/notifications');
+}
+
+const copied = ref(false);
+function copyCalendarUrl() {
+    navigator.clipboard.writeText(props.calendarUrl).then(() => {
+        copied.value = true;
+        setTimeout(() => (copied.value = false), 2000);
+    });
+}
+
+const resetting = ref(false);
+function resetCalendarToken() {
+    resetting.value = true;
+    router.post('/calendar/reset', {}, {
+        preserveScroll: true,
+        onFinish: () => (resetting.value = false),
+    });
 }
 </script>
 
@@ -145,5 +164,55 @@ function submit() {
                 />
             </div>
         </form>
+
+        <!-- Calendar sync -->
+        <div class="mt-10">
+            <h3 class="font-display text-lg font-semibold tracking-tight">Calendar sync</h3>
+            <p class="mt-1 text-sm text-ink/55 dark:text-canvas/50">
+                Subscribe to this private URL in any calendar app (Google Calendar, Apple
+                Calendar, Outlook) and your gigs will appear automatically. The feed updates
+                as gigs are added or changed.
+            </p>
+
+            <div class="mt-4 rounded-2xl border border-surface bg-white p-6 shadow-sm dark:border-white/10 dark:bg-riser sm:p-8">
+                <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted dark:text-canvas/45">
+                    Your calendar feed URL
+                </label>
+                <div class="flex items-center gap-3">
+                    <input
+                        :value="calendarUrl"
+                        readonly
+                        class="min-w-0 flex-1 rounded-xl border border-surface bg-canvas px-3.5 py-2.5 font-mono text-xs text-ink/70 dark:border-white/10 dark:bg-backstage dark:text-canvas/60"
+                        @click="($event.target).select()"
+                    />
+                    <Button
+                        type="button"
+                        :label="copied ? 'Copied!' : 'Copy'"
+                        :icon="copied ? 'pi pi-check' : 'pi pi-copy'"
+                        :severity="copied ? 'success' : 'secondary'"
+                        outlined
+                        @click="copyCalendarUrl"
+                    />
+                </div>
+
+                <div class="mt-5 border-t border-surface pt-5 dark:border-white/10">
+                    <p class="text-sm text-ink/55 dark:text-canvas/50">
+                        If you've shared this URL and want to revoke access, reset it. Any calendar
+                        apps using the old URL will stop receiving updates.
+                    </p>
+                    <Button
+                        type="button"
+                        label="Reset link"
+                        icon="pi pi-refresh"
+                        severity="secondary"
+                        outlined
+                        size="small"
+                        class="mt-3"
+                        :loading="resetting"
+                        @click="resetCalendarToken"
+                    />
+                </div>
+            </div>
+        </div>
     </div>
 </template>

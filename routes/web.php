@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BandMembers\BandMemberController;
+use App\Http\Controllers\Calendar\CalendarController;
 use App\Http\Controllers\Notifications\NotificationPreferencesController;
 use App\Http\Controllers\Bands\BandController;
 use App\Http\Controllers\Bands\BandSettingsController;
@@ -67,6 +68,14 @@ Route::middleware('throttle:60,1')->group(function () {
         ->name('push.unsubscribe.token');
 });
 
+// iCal calendar feed — login-free, keyed by the member's durable calendar_token.
+// Throttled since it's unauthenticated. Calendar apps poll on their own schedule.
+Route::middleware('throttle:60,1')->group(function () {
+    Route::get('/calendar/{calendarToken}.ics', [CalendarController::class, 'show'])
+        ->name('calendar.feed')
+        ->where('calendarToken', '[A-Za-z0-9]{64}');
+});
+
 // Band creation sits outside the HasActiveBand group on purpose — a user with
 // no bands must be able to reach it without being bounced back here. It's also
 // where the switcher's "Create a new band" link lands.
@@ -128,6 +137,9 @@ Route::middleware(['auth', HasActiveBand::class])->group(function () {
     // Notification preferences — personal, available to all authenticated members.
     Route::get('/notifications', [NotificationPreferencesController::class, 'show'])->name('notifications.preferences');
     Route::put('/notifications', [NotificationPreferencesController::class, 'update'])->name('notifications.update');
+
+    // Calendar token management — reset issues a new token, breaking existing subscriptions.
+    Route::post('/calendar/reset', [CalendarController::class, 'reset'])->name('calendar.reset');
 
     // Band settings live with the active band, so they sit behind HasActiveBand.
     Route::get('/settings', [BandSettingsController::class, 'edit'])->name('settings.index');

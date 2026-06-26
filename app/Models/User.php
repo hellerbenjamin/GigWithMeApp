@@ -113,6 +113,20 @@ class User extends Authenticatable
     }
 
     /**
+     * The member's durable calendar-feed token. This is what the iCal subscribe
+     * URL carries — regenerating it invalidates any calendar apps already
+     * subscribed. Independent from push_token so the two can be revoked separately.
+     */
+    public function ensureCalendarToken(): string
+    {
+        if (! $this->calendar_token) {
+            $this->forceFill(['calendar_token' => Str::random(64)])->save();
+        }
+
+        return $this->calendar_token;
+    }
+
+    /**
      * Mint a one-time magic link token valid for 15 minutes. Replaces any
      * existing token so only the most recent link works.
      */

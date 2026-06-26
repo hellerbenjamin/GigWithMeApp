@@ -23,6 +23,7 @@ class NotificationPreferencesController extends Controller
             'days' => $user->reminder_days ?? [7, 1],
             'availableDays' => self::AVAILABLE_DAYS,
             'hasPush' => $user->hasPushSubscription(),
+            'calendarUrl' => route('calendar.feed', ['calendarToken' => $user->ensureCalendarToken()]),
         ]);
     }
 
