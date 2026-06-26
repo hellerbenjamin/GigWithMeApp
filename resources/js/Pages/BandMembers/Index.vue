@@ -104,12 +104,21 @@ const roleStyles = {
                 </a>
             </div>
             <div class="flex shrink-0 flex-col items-end gap-3">
-                <span
-                    class="rounded-full px-2.5 py-1 text-xs font-semibold"
-                    :class="roleStyles[member.role] ?? roleStyles.member"
-                >
-                    {{ member.roleLabel }}
-                </span>
+                <div class="flex flex-wrap justify-end gap-1.5">
+                    <span
+                        class="rounded-full px-2.5 py-1 text-xs font-semibold"
+                        :class="roleStyles[member.role] ?? roleStyles.member"
+                    >
+                        {{ member.roleLabel }}
+                    </span>
+                    <span
+                        v-if="member.critical"
+                        class="rounded-full bg-encore-coral/12 px-2.5 py-1 text-xs font-semibold text-encore-coral"
+                        title="This member must be available for the gig to confirm automatically"
+                    >
+                        Critical
+                    </span>
+                </div>
                 <div v-if="canManage" class="flex items-center gap-0.5">
                 <Link
                     :href="`/band-members/${member.id}/edit`"

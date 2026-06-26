@@ -70,6 +70,7 @@ class StoreBandMemberRequest extends FormRequest
             ],
 
             'role' => ['required', Rule::enum(BandUserRoleEnum::class)],
+            'critical' => ['boolean'],
         ];
     }
 }

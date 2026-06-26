@@ -43,6 +43,7 @@ class BandMemberController extends Controller
                     'phoneNumber' => $user->phone_number,
                     'role' => $role->value,
                     'roleLabel' => $role->label(),
+                    'critical' => (bool) $user->pivot->critical,
                     'isYou' => $user->id === auth()->id(),
                 ];
             });
@@ -92,6 +93,8 @@ class BandMemberController extends Controller
         $band = ActiveBand::band();
         abort_unless($band->users()->whereKey($user->getKey())->exists(), 404);
 
+        $pivot = $band->users()->withPivot('role', 'critical')->find($user->getKey())?->pivot;
+
         return Inertia::render('BandMembers/Edit', [
             'member' => [
                 'id' => $user->id,
@@ -99,7 +102,8 @@ class BandMemberController extends Controller
                 'email' => $user->email,
                 'phoneNumber' => $user->phone_number,
                 'smsConsent' => $user->hasSmsConsent(),
-                'role' => $band->getUserRole($user)->value,
+                'role' => $pivot?->role ?? $band->getUserRole($user)->value,
+                'critical' => (bool) ($pivot?->critical ?? true),
             ],
             'roles' => $this->roleOptions(),
         ]);

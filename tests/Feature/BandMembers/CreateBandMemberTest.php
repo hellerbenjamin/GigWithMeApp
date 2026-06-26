@@ -103,7 +103,7 @@ class CreateBandMemberTest extends TestCase
         Notification::assertSentTo($created, BandInvitation::class);
     }
 
-    public function test_an_established_member_is_not_re_invited(): void
+    public function test_an_established_member_is_re_invited_on_add(): void
     {
         Notification::fake();
         [$owner] = $this->userInBand();
@@ -116,7 +116,8 @@ class CreateBandMemberTest extends TestCase
             'role' => 'admin',
         ])->assertRedirect('/band-members');
 
-        Notification::assertNotSentTo($existing, BandInvitation::class);
+        // Always resend the invitation so re-added members get a fresh link.
+        Notification::assertSentTo($existing, BandInvitation::class);
     }
 
     public function test_a_person_already_on_the_roster_is_rejected(): void

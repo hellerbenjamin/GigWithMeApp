@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'gig_id',
     'user_id',
     'status',
+    'critical',
     'responded_at',
     'channel',
     'note',
@@ -32,6 +33,7 @@ class GigMemberResponse extends Model
     {
         return [
             'status' => GigResponseStatusEnum::class,
+            'critical' => 'boolean',
             'responded_at' => 'datetime',
         ];
     }

@@ -53,6 +53,7 @@ class BandMemberService
 
             $band->users()->attach($user, [
                 'role' => BandUserRoleEnum::from($attributes['role'])->value,
+                'critical' => (bool) ($attributes['critical'] ?? true),
             ]);
 
             return ['user' => $user, 'created' => $existing === null];
@@ -82,6 +83,7 @@ class BandMemberService
 
             $band->users()->updateExistingPivot($user->getKey(), [
                 'role' => BandUserRoleEnum::from($attributes['role'])->value,
+                'critical' => (bool) ($attributes['critical'] ?? true),
             ]);
         });
     }

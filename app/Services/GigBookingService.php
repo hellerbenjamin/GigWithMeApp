@@ -63,11 +63,12 @@ class GigBookingService
      */
     public function openPoll(Gig $gig, User $actor): Gig
     {
-        foreach ($gig->band->users()->get() as $member) {
+        foreach ($gig->band->users()->withPivot('critical')->get() as $member) {
             $isActor = $member->is($actor);
 
             $gig->memberResponses()->create([
                 'user_id' => $member->getKey(),
+                'critical' => (bool) $member->pivot->critical,
                 'status' => $isActor
                     ? GigResponseStatusEnum::Available->value
                     : GigResponseStatusEnum::Pending->value,
@@ -107,10 +108,17 @@ class GigBookingService
         $gig->poll_closed_at = null;
         $gig->save();
 
+        $criticalByUser = $gig->band->users()
+            ->withPivot('critical')
+            ->get()
+            ->keyBy('id')
+            ->map(fn (User $u) => (bool) $u->pivot->critical);
+
         foreach ($gig->memberResponses()->get() as $response) {
             $isActor = $response->user_id === $actor->getKey();
 
             $response->update([
+                'critical' => $criticalByUser[$response->user_id] ?? true,
                 'status' => $isActor
                     ? GigResponseStatusEnum::Available->value
                     : GigResponseStatusEnum::Pending->value,
@@ -156,8 +164,10 @@ class GigBookingService
     /**
      * Decide the poll's fate once a reply lands:
      * - still someone pending → keep waiting;
-     * - everyone available → confirm;
-     * - everyone replied but some can't → notify admins, exactly once.
+     * - all critical members available → confirm (non-critical unavailables don't block);
+     * - everyone replied but a critical member can't → notify admins, exactly once.
+     *
+     * If no members are marked critical, falls back to requiring everyone available.
      */
     public function evaluatePoll(Gig $gig): void
     {
@@ -174,18 +184,23 @@ class GigBookingService
             return;
         }
 
-        $allAvailable = $responses->every(
+        $criticalResponses = $responses->where('critical', true);
+
+        // With no critical members defined, require all members to be available.
+        $threshold = $criticalResponses->isEmpty() ? $responses : $criticalResponses;
+
+        $allThresholdAvailable = $threshold->every(
             fn (GigMemberResponse $r) => $r->status === GigResponseStatusEnum::Available,
         );
 
-        if ($allAvailable) {
+        if ($allThresholdAvailable) {
             $this->confirm($gig);
 
             return;
         }
 
-        // Everyone replied, someone can't make it — hand it to the admins, but
-        // stamp poll_closed_at so a later answer-change doesn't re-notify them.
+        // Everyone replied, a critical member can't make it — hand it to the admins,
+        // stamping poll_closed_at so a later answer-change doesn't re-notify them.
         if ($gig->poll_closed_at === null) {
             $gig->poll_closed_at = now();
             $gig->save();

@@ -264,6 +264,7 @@ class GigController extends Controller
                 'status' => $r->status->value,
                 'statusLabel' => $r->status->label(),
                 'severity' => $r->status->severity(),
+                'critical' => (bool) $r->critical,
                 'note' => $r->note,
                 'respondedAt' => $r->responded_at?->diffForHumans(),
             ])->all(),

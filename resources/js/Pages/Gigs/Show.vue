@@ -241,7 +241,13 @@ const progressPct = computed(() => {
                     class="flex items-start justify-between gap-4 py-3 first:pt-0 last:pb-0"
                 >
                     <div class="min-w-0">
-                        <p class="truncate text-sm font-medium">{{ member.name }}</p>
+                        <p class="flex items-center gap-1.5 truncate text-sm font-medium">
+                            {{ member.name }}
+                            <span
+                                v-if="member.critical"
+                                class="rounded-full bg-encore-coral/12 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-encore-coral"
+                            >Critical</span>
+                        </p>
                         <p v-if="member.note" class="mt-0.5 text-sm italic text-ink/55 dark:text-canvas/50">
                             “{{ member.note }}”
                         </p>

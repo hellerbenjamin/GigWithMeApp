@@ -20,6 +20,7 @@ const form = useForm({
     name: '',
     email: '',
     role: 'member',
+    critical: true,
 });
 
 function submit() {
@@ -95,6 +96,21 @@ function submit() {
                     book and view.
                 </small>
                 <small v-if="form.errors.role" class="text-cancelled">{{ form.errors.role }}</small>
+            </div>
+
+            <div class="flex items-start gap-3">
+                <Checkbox
+                    v-model="form.critical"
+                    input-id="critical"
+                    :binary="true"
+                    class="mt-0.5"
+                />
+                <div>
+                    <label for="critical" class="block text-sm font-medium">Critical for gigs</label>
+                    <p class="mt-0.5 text-sm text-muted dark:text-canvas/45">
+                        The gig confirms automatically only when all critical members are available.
+                    </p>
+                </div>
             </div>
 
             <!-- Actions -->

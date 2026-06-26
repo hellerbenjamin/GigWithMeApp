@@ -63,6 +63,7 @@ class UpdateBandMemberRequest extends FormRequest
             ],
 
             'role' => ['required', Rule::enum(BandUserRoleEnum::class)],
+            'critical' => ['boolean'],
         ];
     }
 }

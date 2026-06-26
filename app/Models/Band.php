@@ -37,7 +37,7 @@ class Band extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'band_user')
-            ->withPivot('role')
+            ->withPivot('role', 'critical')
             ->withTimestamps();
     }
 
