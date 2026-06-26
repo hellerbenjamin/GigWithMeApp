@@ -7,6 +7,7 @@ use App\Http\Controllers\Bands\SetActiveBandController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Gigs\GigController;
 use App\Http\Controllers\Invites\AcceptInviteController;
+use App\Http\Controllers\Public\PublicGigController;
 use App\Http\Controllers\Invites\NotificationSetupController;
 use App\Http\Controllers\ManifestController;
 use App\Http\Controllers\Member\MemberHomeController;
@@ -24,6 +25,9 @@ Route::redirect('/', '/login');
 // the URLs we give our SMS provider (Vonage) for A2P registration.
 Route::get('/privacy', static fn () => Inertia::render('Legal/Privacy'))->name('privacy');
 Route::get('/terms', static fn () => Inertia::render('Legal/Terms'))->name('terms');
+
+// Public band gig listing — shareable with fans, no login required.
+Route::get('/bands/{slug}/gigs', [PublicGigController::class, 'index'])->name('bands.public-gigs');
 
 // Generic PWA manifest for non-personalized pages (login, marketing). Personal
 // member pages link the token-bearing manifest above instead.
