@@ -49,11 +49,7 @@ class BandMemberService
                 'password' => Str::password(),
             ]);
 
-            // Brand-new accounts haven't accepted, so mint the invite token now;
-            // the emailed link carries it to the acceptance page.
-            if ($existing === null) {
-                $user->ensureInviteToken();
-            }
+            $user->ensureInviteToken();
 
             $band->users()->attach($user, [
                 'role' => BandUserRoleEnum::from($attributes['role'])->value,
@@ -62,12 +58,7 @@ class BandMemberService
             return ['user' => $user, 'created' => $existing === null];
         });
 
-        // Invite new accounts, and existing ones still carrying an unaccepted
-        // invite token (so a second band re-nudges them). Established members
-        // who've already accepted are left alone.
-        if ($created || $user->invite_token !== null) {
-            $user->notify(new BandInvitation($band));
-        }
+        $user->notify(new BandInvitation($band));
 
         return ['user' => $user, 'created' => $created];
     }
