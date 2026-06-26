@@ -1,10 +1,11 @@
 <script setup>
+import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import GigWithMeLogo from './GigWithMeLogo.vue';
 import BandSwitcher from './BandSwitcher.vue';
 import NavLink from './NavLink.vue';
 
-defineProps({
+const props = defineProps({
     activeBand: { type: Object, default: null },
     bands: { type: Array, default: () => [] },
     open: { type: Boolean, default: false }, // mobile drawer state
@@ -12,16 +13,23 @@ defineProps({
 
 const emit = defineEmits(['close']);
 
-// Primary destinations. Hrefs point at their intended URLs; only /dashboard is
-// wired server-side so far — the rest land once their controllers exist.
-const primaryNav = [
-    { href: '/dashboard', icon: 'pi pi-home', label: 'Dashboard' },
-    { href: '/gigs', icon: 'pi pi-calendar', label: 'Gigs' },
-    { href: '/venues', icon: 'pi pi-map-marker', label: 'Venues' },
-    { href: '/band-members', icon: 'pi pi-users', label: 'Band Members' },
-    // Music is hidden for now — re-add once the feature is built out.
-    // { href: '/music', icon: 'pi pi-volume-up', label: 'Music' },
-];
+const isManager = computed(() =>
+    props.activeBand?.role === 'owner' || props.activeBand?.role === 'admin',
+);
+
+const primaryNav = computed(() => {
+    const items = [
+        { href: '/dashboard', icon: 'pi pi-home', label: 'Dashboard' },
+    ];
+    if (isManager.value) {
+        items.push(
+            { href: '/gigs', icon: 'pi pi-calendar', label: 'Gigs' },
+            { href: '/venues', icon: 'pi pi-map-marker', label: 'Venues' },
+            { href: '/band-members', icon: 'pi pi-users', label: 'Band Members' },
+        );
+    }
+    return items;
+});
 </script>
 
 <template>
@@ -68,7 +76,7 @@ const primaryNav = [
         </nav>
 
         <!-- Footer -->
-        <div class="border-t border-white/10 px-4 py-4" @click="emit('close')">
+        <div v-if="isManager" class="border-t border-white/10 px-4 py-4" @click="emit('close')">
             <NavLink href="/settings" icon="pi pi-cog" label="Settings" />
         </div>
     </aside>

@@ -105,4 +105,60 @@ class DashboardTest extends TestCase
                 ->where('upcomingGigs.4.date', Carbon::today()->addDays(8)->toDateString())
             );
     }
+
+    public function test_member_role_sees_member_dashboard(): void
+    {
+        $user = User::factory()->create();
+        $band = Band::factory()->create();
+        $user->bands()->attach($band, ['role' => 'member']);
+        Gig::factory()->for($band)->confirmed()->create([
+            'date' => \Illuminate\Support\Carbon::tomorrow()->toDateString(),
+        ]);
+
+        $this->actingAs($user)
+            ->get('/dashboard')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('MemberDashboard')
+                ->where('stats.upcomingGigs', 1)
+                ->has('upcomingGigs', 1)
+                ->missing('stats.bookedThisMonth')
+                ->missing('stats.venues')
+                ->missing('stats.members')
+            );
+    }
+
+    public function test_member_dashboard_includes_rsvp_status(): void
+    {
+        $owner = User::factory()->create();
+        $member = User::factory()->create();
+        $band = Band::factory()->create();
+        $owner->bands()->attach($band, ['role' => 'owner']);
+        $member->bands()->attach($band, ['role' => 'member']);
+
+        $gig = Gig::factory()->for($band)->create([
+            'status' => 'pending',
+            'booking_mode' => 'poll',
+            'date' => \Illuminate\Support\Carbon::tomorrow()->toDateString(),
+        ]);
+
+        // Seed a poll response for the member.
+        $gig->memberResponses()->create([
+            'user_id' => $member->id,
+            'status' => 'available',
+            'responded_at' => now(),
+            'channel' => 'web',
+            'token' => \Illuminate\Support\Str::random(40),
+            'critical' => true,
+        ]);
+
+        $this->actingAs($member)
+            ->get('/dashboard')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('MemberDashboard')
+                ->where('upcomingGigs.0.myRsvp', 'available')
+                ->where('upcomingGigs.0.myRsvpLabel', 'Available')
+            );
+    }
 }
