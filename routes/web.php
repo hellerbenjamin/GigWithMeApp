@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BandMembers\BandMemberController;
+use App\Http\Controllers\Notifications\NotificationPreferencesController;
 use App\Http\Controllers\Bands\BandController;
 use App\Http\Controllers\Bands\BandSettingsController;
 use App\Http\Controllers\Bands\SetActiveBandController;
@@ -123,6 +124,10 @@ Route::middleware(['auth', HasActiveBand::class])->group(function () {
     Route::get('/band-members/{user}/edit', [BandMemberController::class, 'edit'])->name('band-members.edit');
     Route::put('/band-members/{user}', [BandMemberController::class, 'update'])->name('band-members.update');
     Route::delete('/band-members/{user}', [BandMemberController::class, 'destroy'])->name('band-members.destroy');
+
+    // Notification preferences — personal, available to all authenticated members.
+    Route::get('/notifications', [NotificationPreferencesController::class, 'show'])->name('notifications.preferences');
+    Route::put('/notifications', [NotificationPreferencesController::class, 'update'])->name('notifications.update');
 
     // Band settings live with the active band, so they sit behind HasActiveBand.
     Route::get('/settings', [BandSettingsController::class, 'edit'])->name('settings.index');

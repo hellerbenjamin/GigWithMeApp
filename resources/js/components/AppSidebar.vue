@@ -76,8 +76,9 @@ const primaryNav = computed(() => {
         </nav>
 
         <!-- Footer -->
-        <div v-if="isManager" class="border-t border-white/10 px-4 py-4" @click="emit('close')">
-            <NavLink href="/settings" icon="pi pi-cog" label="Settings" />
+        <div class="border-t border-white/10 px-4 py-4 space-y-1" @click="emit('close')">
+            <NavLink href="/notifications" icon="pi pi-bell" label="Notifications" />
+            <NavLink v-if="isManager" href="/settings" icon="pi pi-cog" label="Settings" />
         </div>
     </aside>
 </template>

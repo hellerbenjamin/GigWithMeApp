@@ -34,6 +34,8 @@ class User extends Authenticatable
             'sms_consent_at' => 'datetime',
             'sms_opted_out_at' => 'datetime',
             'magic_link_expires_at' => 'datetime',
+            'reminder_channels' => 'array',
+            'reminder_days' => 'array',
         ];
     }
 
