@@ -9,7 +9,7 @@ export default {
 </script>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { usePushNotifications } from '../../composables/usePushNotifications';
 
@@ -17,19 +17,18 @@ const props = defineProps({
     pushToken: { type: String, required: true },
 });
 
-const page = usePage();
-const vapidKey = computed(() => page.props.webpushKey ?? null);
+const vapidKey = usePage().props.webpushKey ?? null;
 
 const { supported, subscribed, busy, denied, toggle } = usePushNotifications({
-    vapidKey: vapidKey.value,
+    vapidKey,
     pushToken: props.pushToken,
 });
 
-// Resolved on mount — avoids SSR window access.
-const envState = ref('loading'); // 'loading' | 'in-app-ios' | 'in-app-android' | 'ios-browser' | 'ready'
 const isIos = ref(false);
-const installPrompt = ref(null);
 const isInstalled = ref(false);
+const isMobile = ref(false);
+const isFirefoxAndroid = ref(false);
+const installPrompt = ref(null);
 const installing = ref(false);
 const copyDone = ref(false);
 
@@ -59,36 +58,22 @@ async function copyLink() {
 
 onMounted(() => {
     const ua = navigator.userAgent;
-    const ios = /iPad|iPhone|iPod/.test(ua) || (ua.includes('Mac') && navigator.maxTouchPoints > 1);
-    isIos.value = ios;
 
-    const isStandalone =
+    isIos.value = /iPad|iPhone|iPod/.test(ua) ||
+        (ua.includes('Mac') && navigator.maxTouchPoints > 1);
+
+    const isAndroid = /Android/.test(ua);
+    isMobile.value = isIos.value || isAndroid;
+
+    // Firefox on Android dropped PWA install support — users need Chrome.
+    isFirefoxAndroid.value = isAndroid && /Firefox\//.test(ua);
+
+    isInstalled.value =
         window.matchMedia('(display-mode: standalone)').matches ||
         window.navigator.standalone === true;
 
-    if (isStandalone) isInstalled.value = true;
-
-    // iOS WebView: Safari always defines navigator.standalone; WebViews don't.
-    const isIosWebView = ios && typeof window.navigator.standalone === 'undefined';
-    // Android WebView: most add "wv)" to the UA.
-    const isAndroidWebView = /Android/.test(ua) && /; wv\)/.test(ua);
-    // Social/email in-app browsers that embed their own renderer.
-    const isKnownInApp = /FBAN|FBAV|Instagram|Twitter\/|Line\/|Snapchat/.test(ua);
-
-    if (isIosWebView || (isKnownInApp && ios)) {
-        envState.value = 'in-app-ios';
-    } else if (isAndroidWebView || (isKnownInApp && !ios)) {
-        envState.value = 'in-app-android';
-    } else if (ios && !isStandalone) {
-        envState.value = 'ios-browser';
-    } else {
-        envState.value = 'ready';
-    }
-
-    // app.js captures beforeinstallprompt before Vue mounts; read it here.
-    if (window.__pwaInstallPrompt) {
-        installPrompt.value = window.__pwaInstallPrompt;
-    }
+    // Captured early in app.js before Vue mounts.
+    installPrompt.value = window.__pwaInstallPrompt ?? null;
 
     window.addEventListener('appinstalled', () => {
         isInstalled.value = true;
@@ -101,110 +86,8 @@ onMounted(() => {
 <template>
     <Head title="Set up alerts · GigWithMe" />
 
-    <!-- ── iOS in-app browser (Gmail, social apps, etc.) ── -->
-    <template v-if="envState === 'in-app-ios'">
-        <div class="space-y-1.5">
-            <h2 class="text-lg font-semibold">Open in Safari to continue</h2>
-            <p class="text-sm text-ink/60 dark:text-canvas/55">
-                This link opened inside another app. Push notifications need Safari,
-                so tap the share button and choose <strong>Open in Safari</strong>.
-            </p>
-        </div>
-        <div class="mt-6 space-y-3">
-            <div class="rounded-xl bg-surface/60 p-4 dark:bg-white/5">
-                <p class="mb-2 text-xs font-medium uppercase tracking-wide text-ink/40 dark:text-canvas/35">
-                    Or copy this link and paste it into Safari
-                </p>
-                <p class="break-all text-sm text-ink/70 dark:text-canvas/65">{{ currentUrl }}</p>
-                <Button
-                    class="mt-3"
-                    :label="copyDone ? 'Copied!' : 'Copy link'"
-                    size="small"
-                    severity="secondary"
-                    outlined
-                    @click="copyLink"
-                />
-            </div>
-            <a
-                href="/login"
-                class="block text-center text-sm text-ink/40 hover:text-ink/60 dark:text-canvas/35 dark:hover:text-canvas/55"
-            >
-                Skip for now
-            </a>
-        </div>
-    </template>
-
-    <!-- ── Android in-app browser ── -->
-    <template v-else-if="envState === 'in-app-android'">
-        <div class="space-y-1.5">
-            <h2 class="text-lg font-semibold">Open in Chrome to continue</h2>
-            <p class="text-sm text-ink/60 dark:text-canvas/55">
-                This link opened inside another app. Tap <strong>&#8942;</strong> and choose
-                <strong>Open in Chrome</strong> (or your default browser) to set up
-                push notifications.
-            </p>
-        </div>
-        <div class="mt-6 space-y-3">
-            <div class="rounded-xl bg-surface/60 p-4 dark:bg-white/5">
-                <p class="mb-2 text-xs font-medium uppercase tracking-wide text-ink/40 dark:text-canvas/35">
-                    Or copy this link and paste it into Chrome
-                </p>
-                <p class="break-all text-sm text-ink/70 dark:text-canvas/65">{{ currentUrl }}</p>
-                <Button
-                    class="mt-3"
-                    :label="copyDone ? 'Copied!' : 'Copy link'"
-                    size="small"
-                    severity="secondary"
-                    outlined
-                    @click="copyLink"
-                />
-            </div>
-            <a
-                href="/login"
-                class="block text-center text-sm text-ink/40 hover:text-ink/60 dark:text-canvas/35 dark:hover:text-canvas/55"
-            >
-                Skip for now
-            </a>
-        </div>
-    </template>
-
-    <!-- ── iOS Safari, not installed: Add to Home Screen first ── -->
-    <template v-else-if="envState === 'ios-browser'">
-        <div class="space-y-1.5">
-            <h2 class="text-lg font-semibold">Add GigWithMe to your Home Screen</h2>
-            <p class="text-sm text-ink/60 dark:text-canvas/55">
-                Push notifications on iPhone require the app to be installed.
-                It only takes a few seconds.
-            </p>
-        </div>
-        <div class="mt-6 space-y-3">
-            <div class="rounded-xl bg-surface/60 p-4 dark:bg-white/5">
-                <ol class="space-y-2 text-sm text-ink/75 dark:text-canvas/70">
-                    <li>
-                        <span class="font-medium">1.</span>
-                        Tap the <i class="pi pi-upload mx-0.5" /> Share button at the bottom of Safari.
-                    </li>
-                    <li>
-                        <span class="font-medium">2.</span>
-                        Choose <strong>Add to Home Screen</strong>.
-                    </li>
-                    <li>
-                        <span class="font-medium">3.</span>
-                        Open GigWithMe from your Home Screen and you're all set.
-                    </li>
-                </ol>
-            </div>
-            <a
-                href="/login"
-                class="block text-center text-sm text-ink/40 hover:text-ink/60 dark:text-canvas/35 dark:hover:text-canvas/55"
-            >
-                Skip for now, take me to sign in
-            </a>
-        </div>
-    </template>
-
-    <!-- ── Ready: real browser, not iOS-gated ── -->
-    <template v-else-if="envState === 'ready'">
+    <!-- ─── Installed PWA: just the push toggle ─── -->
+    <template v-if="isInstalled">
         <div class="space-y-1.5">
             <h2 class="text-lg font-semibold">You're in.</h2>
             <p class="text-sm text-ink/60 dark:text-canvas/55">
@@ -213,40 +96,13 @@ onMounted(() => {
         </div>
 
         <div class="mt-6 space-y-3">
-            <!-- Android install prompt (shown when browser offers it) -->
-            <div
-                v-if="installPrompt && !isInstalled"
-                class="flex items-center gap-4 rounded-xl bg-amp-violet/10 p-4 dark:bg-amp-violet/15"
-            >
-                <div class="grid size-10 shrink-0 place-items-center rounded-full bg-amp-violet/20 text-amp-violet">
-                    <i class="pi pi-home text-lg" />
-                </div>
-                <div class="min-w-0 flex-1">
-                    <p class="text-sm font-medium">Install GigWithMe</p>
-                    <p class="mt-0.5 text-sm text-ink/55 dark:text-canvas/50">
-                        Add it to your Home Screen for the full app experience.
-                    </p>
-                </div>
-                <Button
-                    label="Install"
-                    size="small"
-                    :loading="installing"
-                    @click="install"
-                />
-            </div>
-
-            <!-- Push notifications are blocked -->
-            <div
-                v-if="denied && !subscribed"
-                class="rounded-xl bg-surface/60 p-4 text-sm dark:bg-white/5"
-            >
+            <div v-if="denied && !subscribed" class="rounded-xl bg-surface/60 p-4 text-sm dark:bg-white/5">
                 <p class="font-medium">Notifications are blocked</p>
                 <p class="mt-1 text-ink/60 dark:text-canvas/55">
-                    Re-enable notifications for this site in your browser settings to get gig alerts.
+                    Re-enable notifications for this site in your browser settings.
                 </p>
             </div>
 
-            <!-- Push toggle -->
             <div
                 v-else-if="supported"
                 class="flex items-center gap-4 rounded-xl bg-surface/60 p-4 dark:bg-white/5"
@@ -262,7 +118,7 @@ onMounted(() => {
                         {{
                             subscribed
                                 ? "You'll get a tap on this device for new gigs and confirmations."
-                                : "Get instant alerts on this device for polls and confirmations."
+                                : "Get instant alerts for polls and confirmations."
                         }}
                     </p>
                 </div>
@@ -281,6 +137,159 @@ onMounted(() => {
                 class="block text-center text-sm text-ink/40 hover:text-ink/60 dark:text-canvas/35 dark:hover:text-canvas/55"
             >
                 {{ subscribed ? 'Continue to sign in' : 'Skip for now, take me to sign in' }}
+            </a>
+        </div>
+    </template>
+
+    <!-- ─── iOS, not installed ─── -->
+    <template v-else-if="isIos">
+        <div class="space-y-1.5">
+            <h2 class="text-lg font-semibold">Install GigWithMe to get alerts</h2>
+            <p class="text-sm text-ink/60 dark:text-canvas/55">
+                Push notifications on iPhone require the app to be added to your
+                Home Screen. Open this page in Safari, then:
+            </p>
+        </div>
+
+        <div class="mt-6 space-y-3">
+            <div class="rounded-xl bg-surface/60 p-4 dark:bg-white/5">
+                <ol class="space-y-3 text-sm text-ink/75 dark:text-canvas/70">
+                    <li class="flex gap-3">
+                        <span class="font-semibold text-amp-violet">1</span>
+                        Tap the <i class="pi pi-upload mx-0.5 align-middle" /> Share button
+                        at the bottom of Safari.
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="font-semibold text-amp-violet">2</span>
+                        Choose <strong>Add to Home Screen</strong> and tap Add.
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="font-semibold text-amp-violet">3</span>
+                        Open GigWithMe from your Home Screen. It will ask to
+                        enable notifications.
+                    </li>
+                </ol>
+            </div>
+
+            <div class="rounded-xl bg-surface/60 p-4 dark:bg-white/5">
+                <p class="mb-2 text-xs font-medium uppercase tracking-wide text-ink/40 dark:text-canvas/35">
+                    Not in Safari? Copy this link and paste it there
+                </p>
+                <p class="break-all text-sm text-ink/70 dark:text-canvas/65">{{ currentUrl }}</p>
+                <Button
+                    class="mt-3"
+                    :label="copyDone ? 'Copied!' : 'Copy link'"
+                    size="small"
+                    severity="secondary"
+                    outlined
+                    @click="copyLink"
+                />
+            </div>
+
+            <a
+                href="/login"
+                class="block text-center text-sm text-ink/40 hover:text-ink/60 dark:text-canvas/35 dark:hover:text-canvas/55"
+            >
+                Skip for now, take me to sign in
+            </a>
+        </div>
+    </template>
+
+    <!-- ─── Firefox on Android: no PWA support, needs Chrome ─── -->
+    <template v-else-if="isFirefoxAndroid">
+        <div class="space-y-1.5">
+            <h2 class="text-lg font-semibold">Open in Chrome to install</h2>
+            <p class="text-sm text-ink/60 dark:text-canvas/55">
+                Firefox doesn't support installing web apps. Copy this link and
+                open it in Chrome to set up GigWithMe on your Home Screen.
+            </p>
+        </div>
+
+        <div class="mt-6 space-y-3">
+            <div class="rounded-xl bg-surface/60 p-4 dark:bg-white/5">
+                <p class="mb-2 text-xs font-medium uppercase tracking-wide text-ink/40 dark:text-canvas/35">
+                    Your setup link
+                </p>
+                <p class="break-all text-sm text-ink/70 dark:text-canvas/65">{{ currentUrl }}</p>
+                <Button
+                    class="mt-3"
+                    :label="copyDone ? 'Copied!' : 'Copy link'"
+                    size="small"
+                    severity="secondary"
+                    outlined
+                    @click="copyLink"
+                />
+            </div>
+
+            <a
+                href="/login"
+                class="block text-center text-sm text-ink/40 hover:text-ink/60 dark:text-canvas/35 dark:hover:text-canvas/55"
+            >
+                Skip for now, take me to sign in
+            </a>
+        </div>
+    </template>
+
+    <!-- ─── Android / desktop, not installed ─── -->
+    <template v-else-if="isMobile">
+        <div class="space-y-1.5">
+            <h2 class="text-lg font-semibold">Install GigWithMe</h2>
+            <p class="text-sm text-ink/60 dark:text-canvas/55">
+                Add it to your Home Screen for push alerts and quick access.
+            </p>
+        </div>
+
+        <div class="mt-6 space-y-3">
+            <!-- Chrome offers a one-tap install when it's ready -->
+            <Button
+                v-if="installPrompt"
+                label="Install GigWithMe"
+                fluid
+                :loading="installing"
+                @click="install"
+            />
+
+            <!-- Always show manual fallback — Chrome's prompt has its own timing -->
+            <div class="rounded-xl bg-surface/60 p-4 dark:bg-white/5">
+                <p class="mb-3 text-sm font-medium">Install manually in Chrome</p>
+                <ol class="space-y-2 text-sm text-ink/75 dark:text-canvas/70">
+                    <li class="flex gap-3">
+                        <span class="font-semibold text-amp-violet">1</span>
+                        Tap the menu <strong>&#8942;</strong> in the top-right of Chrome.
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="font-semibold text-amp-violet">2</span>
+                        Choose <strong>Add to Home screen</strong>.
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="font-semibold text-amp-violet">3</span>
+                        Open GigWithMe from your Home Screen. It will ask to
+                        enable notifications.
+                    </li>
+                </ol>
+            </div>
+
+            <a
+                href="/login"
+                class="block text-center text-sm text-ink/40 hover:text-ink/60 dark:text-canvas/35 dark:hover:text-canvas/55"
+            >
+                Skip for now, take me to sign in
+            </a>
+        </div>
+    </template>
+
+    <!-- ─── Desktop: skip straight to push toggle ─── -->
+    <template v-else>
+        <div class="space-y-1.5">
+            <h2 class="text-lg font-semibold">You're in.</h2>
+            <p class="text-sm text-ink/60 dark:text-canvas/55">
+                For push alerts on your phone, open this link there and follow
+                the install steps. On desktop you can sign in now.
+            </p>
+        </div>
+        <div class="mt-6">
+            <a href="/login" class="block">
+                <Button label="Continue to sign in" fluid />
             </a>
         </div>
     </template>
