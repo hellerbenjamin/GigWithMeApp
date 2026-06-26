@@ -57,10 +57,10 @@
     --color-muted: #7d7c84; /* Rosy Granite */
     --color-ink: #1f1e22;
 
-    /* Dark-mode chrome — deep indigo-tinted surfaces that pair with the
-       Stage Indigo sidebar. Named for the stage rather than by lightness. */
-    --color-backstage: #16121f; /* dark page background */
-    --color-riser: #221b34; /* dark cards / raised surfaces */
+    /* Dark-mode chrome — neutral charcoal surfaces that match the sidebar's
+       character. Slight cool lean without the purple cast of the old palette. */
+    --color-backstage: #131219; /* dark page background */
+    --color-riser: #1c1b24; /* dark cards / raised surfaces */
 
     /* Status */
     --color-confirmed: #2dd4a8;
