@@ -124,7 +124,18 @@ class GigController extends Controller
         return Inertia::render('Gigs/Create', [
             // The venue picker lists only this band's saved venues; venue is
             // optional, so an empty list still lets you book a TBD-venue gig.
-            'venues' => $band->venues()->orderBy('name')->get(['id', 'name']),
+            // Default time/notes columns are included so the form can pre-fill
+            // the call sheet when a venue is selected.
+            'venues' => $band->venues()->orderBy('name')->get([
+                'id',
+                'name',
+                'default_load_in_time',
+                'default_soundcheck_time',
+                'default_doors_time',
+                'default_start_time',
+                'default_end_time',
+                'default_notes',
+            ]),
             'types' => $this->options(GigTypeEnum::cases()),
             'bookingModes' => GigBookingModeEnum::options(),
             'defaultBookingMode' => $band->default_booking_mode ?? GigBookingModeEnum::Auto->value,

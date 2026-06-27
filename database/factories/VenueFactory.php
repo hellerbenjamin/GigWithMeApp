@@ -32,4 +32,16 @@ class VenueFactory extends Factory
             'notes' => fake()->optional()->sentence(),
         ];
     }
+
+    public function withGigDefaults(): static
+    {
+        return $this->state([
+            'default_load_in_time' => '16:00',
+            'default_soundcheck_time' => '17:30',
+            'default_doors_time' => '19:00',
+            'default_start_time' => '20:00',
+            'default_end_time' => '22:30',
+            'default_notes' => 'Backline provided. Load in via the alley.',
+        ]);
+    }
 }

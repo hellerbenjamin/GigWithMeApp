@@ -110,6 +110,12 @@ class VenueController extends Controller
                 'contact_email',
                 'contact_phone',
                 'notes',
+                'default_load_in_time',
+                'default_soundcheck_time',
+                'default_doors_time',
+                'default_start_time',
+                'default_end_time',
+                'default_notes',
             ]),
         ]);
     }

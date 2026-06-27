@@ -16,6 +16,22 @@ const props = defineProps({
     venue: { type: Object, required: true },
 });
 
+const pad = (n) => String(n).padStart(2, '0');
+
+// Parse "HH:MM" or "HH:MM:SS" strings from the server into Date objects that
+// PrimeVue's time-only DatePicker can display.
+function parseTime(str) {
+    if (!str) return null;
+    const [h, m] = str.split(':').map(Number);
+    const d = new Date();
+    d.setHours(h, m, 0, 0);
+    return d;
+}
+
+function asTime(d) {
+    return d ? `${pad(d.getHours())}:${pad(d.getMinutes())}` : null;
+}
+
 const form = useForm({
     name: props.venue.name ?? '',
     address: props.venue.address ?? '',
@@ -30,19 +46,29 @@ const form = useForm({
     contact_email: props.venue.contact_email ?? '',
     contact_phone: props.venue.contact_phone ?? '',
     notes: props.venue.notes ?? '',
+    default_load_in_time: parseTime(props.venue.default_load_in_time),
+    default_soundcheck_time: parseTime(props.venue.default_soundcheck_time),
+    default_doors_time: parseTime(props.venue.default_doors_time),
+    default_start_time: parseTime(props.venue.default_start_time),
+    default_end_time: parseTime(props.venue.default_end_time),
+    default_notes: props.venue.default_notes ?? '',
 });
 
 function submit() {
     form
-        .transform((data) =>
-            // Blank optionals store as null rather than "".
-            Object.fromEntries(
+        .transform((data) => ({
+            ...Object.fromEntries(
                 Object.entries(data).map(([key, value]) => [
                     key,
                     typeof value === 'string' && value.trim() === '' ? null : value,
                 ]),
             ),
-        )
+            default_load_in_time: asTime(data.default_load_in_time),
+            default_soundcheck_time: asTime(data.default_soundcheck_time),
+            default_doors_time: asTime(data.default_doors_time),
+            default_start_time: asTime(data.default_start_time),
+            default_end_time: asTime(data.default_end_time),
+        }))
         .put(`/venues/${props.venue.id}`);
 }
 </script>
@@ -260,6 +286,105 @@ function submit() {
                 />
                 <small v-if="form.errors.notes" class="text-cancelled">{{ form.errors.notes }}</small>
             </div>
+
+            <!-- Gig defaults -->
+            <fieldset class="space-y-6 border-t border-surface pt-6 dark:border-white/10">
+                <legend class="text-xs font-semibold uppercase tracking-wider text-muted dark:text-canvas/45">
+                    Gig defaults <span class="font-normal normal-case tracking-normal">(optional)</span>
+                </legend>
+                <p class="text-sm text-ink/60 dark:text-canvas/55">
+                    Set typical times for this room. They pre-fill the call sheet whenever
+                    you book a gig here, and you can adjust them per show.
+                </p>
+
+                <div class="grid gap-6 sm:grid-cols-3">
+                    <div class="space-y-1.5">
+                        <label for="default_load_in_time" class="block text-sm font-medium">Load-in</label>
+                        <DatePicker
+                            input-id="default_load_in_time"
+                            v-model="form.default_load_in_time"
+                            time-only
+                            fluid
+                            hour-format="12"
+                            placeholder="—"
+                            :invalid="!!form.errors.default_load_in_time"
+                        />
+                        <small v-if="form.errors.default_load_in_time" class="text-cancelled">{{ form.errors.default_load_in_time }}</small>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label for="default_soundcheck_time" class="block text-sm font-medium">Soundcheck</label>
+                        <DatePicker
+                            input-id="default_soundcheck_time"
+                            v-model="form.default_soundcheck_time"
+                            time-only
+                            fluid
+                            hour-format="12"
+                            placeholder="—"
+                            :invalid="!!form.errors.default_soundcheck_time"
+                        />
+                        <small v-if="form.errors.default_soundcheck_time" class="text-cancelled">{{ form.errors.default_soundcheck_time }}</small>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label for="default_doors_time" class="block text-sm font-medium">Doors</label>
+                        <DatePicker
+                            input-id="default_doors_time"
+                            v-model="form.default_doors_time"
+                            time-only
+                            fluid
+                            hour-format="12"
+                            placeholder="—"
+                            :invalid="!!form.errors.default_doors_time"
+                        />
+                        <small v-if="form.errors.default_doors_time" class="text-cancelled">{{ form.errors.default_doors_time }}</small>
+                    </div>
+                </div>
+
+                <div class="grid gap-6 sm:grid-cols-2">
+                    <div class="space-y-1.5">
+                        <label for="default_start_time" class="block text-sm font-medium">Set time</label>
+                        <DatePicker
+                            input-id="default_start_time"
+                            v-model="form.default_start_time"
+                            time-only
+                            fluid
+                            hour-format="12"
+                            placeholder="—"
+                            :invalid="!!form.errors.default_start_time"
+                        />
+                        <small v-if="form.errors.default_start_time" class="text-cancelled">{{ form.errors.default_start_time }}</small>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label for="default_end_time" class="block text-sm font-medium">End time</label>
+                        <DatePicker
+                            input-id="default_end_time"
+                            v-model="form.default_end_time"
+                            time-only
+                            fluid
+                            hour-format="12"
+                            placeholder="—"
+                            :invalid="!!form.errors.default_end_time"
+                        />
+                        <small v-if="form.errors.default_end_time" class="text-cancelled">{{ form.errors.default_end_time }}</small>
+                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label for="default_notes" class="block text-sm font-medium">Default notes</label>
+                    <Textarea
+                        id="default_notes"
+                        v-model="form.default_notes"
+                        fluid
+                        rows="3"
+                        auto-resize
+                        placeholder="Anything that applies to every gig here — backline, stage setup, parking."
+                        :invalid="!!form.errors.default_notes"
+                    />
+                    <small v-if="form.errors.default_notes" class="text-cancelled">{{ form.errors.default_notes }}</small>
+                </div>
+            </fieldset>
 
             <!-- Actions -->
             <div class="flex items-center justify-end gap-3 border-t border-surface pt-6 dark:border-white/10">

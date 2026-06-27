@@ -56,6 +56,26 @@ class CreateGigTest extends TestCase
             );
     }
 
+    public function test_create_page_includes_venue_gig_defaults_for_prefill(): void
+    {
+        [$user, $band] = $this->userInBand();
+        Venue::factory()->for($band)->withGigDefaults()->create(['name' => 'The Echo Lounge']);
+
+        $this->actingAs($user)
+            ->get('/gigs/create')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Gigs/Create')
+                ->has('venues', 1)
+                ->where('venues.0.default_load_in_time', '16:00:00')
+                ->where('venues.0.default_soundcheck_time', '17:30:00')
+                ->where('venues.0.default_doors_time', '19:00:00')
+                ->where('venues.0.default_start_time', '20:00:00')
+                ->where('venues.0.default_end_time', '22:30:00')
+                ->where('venues.0.default_notes', 'Backline provided. Load in via the alley.')
+            );
+    }
+
     public function test_user_can_book_a_gig(): void
     {
         [$user, $band] = $this->userInBand();

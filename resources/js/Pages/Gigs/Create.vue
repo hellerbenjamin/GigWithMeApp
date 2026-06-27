@@ -9,7 +9,7 @@ export default {
 </script>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const props = defineProps({
@@ -47,6 +47,31 @@ const bookingModeHint = computed(
 );
 
 const pad = (n) => String(n).padStart(2, '0');
+
+// Parse "HH:MM" or "HH:MM:SS" from venue defaults into Date objects for the
+// time-only DatePicker.
+function parseTime(str) {
+    if (!str) return null;
+    const [h, m] = str.split(':').map(Number);
+    const d = new Date();
+    d.setHours(h, m, 0, 0);
+    return d;
+}
+
+// When a venue is selected, pre-fill the call sheet with the venue's defaults.
+// Clearing the venue clears any defaults that were applied (only if unchanged).
+watch(
+    () => form.venue_id,
+    (id) => {
+        const venue = props.venues.find((v) => v.id === id) ?? null;
+        form.load_in_time = parseTime(venue?.default_load_in_time ?? null);
+        form.soundcheck_time = parseTime(venue?.default_soundcheck_time ?? null);
+        form.doors_time = parseTime(venue?.default_doors_time ?? null);
+        form.start_time = parseTime(venue?.default_start_time ?? null);
+        form.end_time = parseTime(venue?.default_end_time ?? null);
+        form.notes = venue?.default_notes ?? '';
+    },
+);
 
 // PrimeVue DatePicker hands back Date objects; the server wants Y-m-d / H:i
 // strings. Formatting from the local Date avoids the UTC-midnight day shift a

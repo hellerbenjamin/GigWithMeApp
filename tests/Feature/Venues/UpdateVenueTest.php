@@ -93,6 +93,73 @@ class UpdateVenueTest extends TestCase
             ->assertSessionHasErrors(['email', 'website']);
     }
 
+    public function test_edit_page_includes_gig_defaults(): void
+    {
+        [$user, $band] = $this->userInBand();
+        $venue = Venue::factory()->for($band)->withGigDefaults()->create([
+            'name' => 'The Echo Lounge',
+        ]);
+
+        $this->actingAs($user)
+            ->get("/venues/{$venue->id}/edit")
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Venues/Edit')
+                ->where('venue.default_load_in_time', '16:00:00')
+                ->where('venue.default_soundcheck_time', '17:30:00')
+                ->where('venue.default_doors_time', '19:00:00')
+                ->where('venue.default_start_time', '20:00:00')
+                ->where('venue.default_end_time', '22:30:00')
+                ->where('venue.default_notes', 'Backline provided. Load in via the alley.')
+            );
+    }
+
+    public function test_gig_defaults_can_be_updated(): void
+    {
+        [$user, $band] = $this->userInBand();
+        $venue = Venue::factory()->for($band)->create(['name' => 'The Echo Lounge']);
+
+        $this->actingAs($user)->put("/venues/{$venue->id}", [
+            'name' => 'The Echo Lounge',
+            'default_load_in_time' => '15:00',
+            'default_doors_time' => '18:30',
+            'default_start_time' => '19:30',
+            'default_end_time' => '21:00',
+            'default_notes' => 'Park out back.',
+        ])->assertRedirect('/venues')->assertSessionHas('success');
+
+        $venue->refresh();
+        $this->assertSame('15:00:00', $venue->default_load_in_time);
+        $this->assertSame('18:30:00', $venue->default_doors_time);
+        $this->assertSame('19:30:00', $venue->default_start_time);
+        $this->assertSame('21:00:00', $venue->default_end_time);
+        $this->assertSame('Park out back.', $venue->default_notes);
+        $this->assertNull($venue->default_soundcheck_time);
+    }
+
+    public function test_gig_defaults_can_be_cleared_on_update(): void
+    {
+        [$user, $band] = $this->userInBand();
+        $venue = Venue::factory()->for($band)->withGigDefaults()->create(['name' => 'The Echo Lounge']);
+
+        // The frontend sends explicit null for cleared time pickers and a blank
+        // string for a cleared notes textarea (the transform converts it to null).
+        $this->actingAs($user)->put("/venues/{$venue->id}", [
+            'name' => 'The Echo Lounge',
+            'default_load_in_time' => null,
+            'default_soundcheck_time' => null,
+            'default_doors_time' => null,
+            'default_start_time' => null,
+            'default_end_time' => null,
+            'default_notes' => null,
+        ])->assertRedirect('/venues');
+
+        $venue->refresh();
+        $this->assertNull($venue->default_load_in_time);
+        $this->assertNull($venue->default_start_time);
+        $this->assertNull($venue->default_notes);
+    }
+
     public function test_another_bands_venue_cannot_be_edited(): void
     {
         [$user] = $this->userInBand();

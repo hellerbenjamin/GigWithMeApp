@@ -47,6 +47,12 @@ class StoreVenueRequest extends FormRequest
             'contact_email' => ['nullable', 'email', 'max:255'],
             'contact_phone' => ['nullable', 'string', 'max:50'],
             'notes' => ['nullable', 'string', 'max:2000'],
+            'default_load_in_time' => ['nullable', 'date_format:H:i,H:i:s'],
+            'default_soundcheck_time' => ['nullable', 'date_format:H:i,H:i:s'],
+            'default_doors_time' => ['nullable', 'date_format:H:i,H:i:s'],
+            'default_start_time' => ['nullable', 'date_format:H:i,H:i:s'],
+            'default_end_time' => ['nullable', 'date_format:H:i,H:i:s'],
+            'default_notes' => ['nullable', 'string', 'max:2000'],
         ];
     }
 

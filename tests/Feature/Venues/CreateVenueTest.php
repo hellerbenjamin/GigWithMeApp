@@ -102,6 +102,63 @@ class CreateVenueTest extends TestCase
             );
     }
 
+    public function test_gig_defaults_are_saved_when_creating_a_venue(): void
+    {
+        [$user, $band] = $this->userInBand();
+
+        $this->actingAs($user)->post('/venues', [
+            'name' => 'The Echo Lounge',
+            'default_load_in_time' => '16:00',
+            'default_soundcheck_time' => '17:30',
+            'default_doors_time' => '19:00',
+            'default_start_time' => '20:00',
+            'default_end_time' => '22:30',
+            'default_notes' => 'Backline provided.',
+        ])->assertRedirect('/venues')->assertSessionHas('success');
+
+        $this->assertDatabaseHas('venues', [
+            'band_id' => $band->id,
+            'name' => 'The Echo Lounge',
+            'default_load_in_time' => '16:00:00',
+            'default_soundcheck_time' => '17:30:00',
+            'default_doors_time' => '19:00:00',
+            'default_start_time' => '20:00:00',
+            'default_end_time' => '22:30:00',
+            'default_notes' => 'Backline provided.',
+        ]);
+    }
+
+    public function test_gig_default_times_must_be_valid_time_strings(): void
+    {
+        [$user] = $this->userInBand();
+
+        $this->actingAs($user)->post('/venues', [
+            'name' => 'Bad Times Hall',
+            'default_load_in_time' => 'not-a-time',
+            'default_soundcheck_time' => '25:99',
+            'default_start_time' => 'noon',
+        ])->assertSessionHasErrors([
+            'default_load_in_time',
+            'default_soundcheck_time',
+            'default_start_time',
+        ]);
+
+        $this->assertDatabaseCount('venues', 0);
+    }
+
+    public function test_gig_defaults_are_optional_when_creating_a_venue(): void
+    {
+        [$user, $band] = $this->userInBand();
+
+        $this->actingAs($user)->post('/venues', ['name' => 'Minimal Venue'])
+            ->assertRedirect('/venues');
+
+        $venue = $band->venues()->sole();
+        $this->assertNull($venue->default_load_in_time);
+        $this->assertNull($venue->default_soundcheck_time);
+        $this->assertNull($venue->default_notes);
+    }
+
     public function test_guests_cannot_reach_venue_creation(): void
     {
         $this->get('/venues/create')->assertRedirect('/login');
