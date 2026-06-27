@@ -59,6 +59,12 @@ class ManifestController extends Controller
                     'type' => 'image/png',
                     'purpose' => 'maskable',
                 ],
+                [
+                    'src' => '/icons/app-icon.svg',
+                    'sizes' => 'any',
+                    'type' => 'image/svg+xml',
+                    'purpose' => 'any',
+                ],
             ],
         ], 200, [
             'Content-Type' => 'application/manifest+json',

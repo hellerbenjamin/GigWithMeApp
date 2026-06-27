@@ -11,6 +11,11 @@
              identified by its push_token. --}}
         <link rel="manifest" href="/manifest.webmanifest">
         <meta name="theme-color" content="#1296B8">
+
+        {{-- Favicons: SVG preferred; PNG fallbacks for older browsers --}}
+        <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
+        <link rel="icon" href="/icons/favicon-32.png" type="image/png" sizes="32x32">
+        <link rel="icon" href="/icons/favicon-16.png" type="image/png" sizes="16x16">
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
         <meta name="apple-mobile-web-app-capable" content="yes">
         <meta name="mobile-web-app-capable" content="yes">
