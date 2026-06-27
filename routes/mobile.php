@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Auth\MagicLinkController;
 use App\Http\Controllers\Api\Auth\LogoutController;
+use App\Http\Controllers\Api\Member\GigController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -22,5 +23,12 @@ Route::prefix('v1')->group(function () {
         // Revoke the current device token.
         Route::post('logout', [LogoutController::class, 'destroy'])
             ->middleware('auth:sanctum');
+    });
+
+    // Member endpoints — require a valid Sanctum token.
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('gigs', [GigController::class, 'index']);
+        Route::get('gigs/{gig}', [GigController::class, 'show']);
+        Route::post('gigs/{gig}/rsvp', [GigController::class, 'rsvp']);
     });
 });
