@@ -9,7 +9,7 @@ export default {
 </script>
 
 <script setup>
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import PushOptIn from '../../components/PushOptIn.vue';
 
@@ -38,11 +38,6 @@ const form = useForm({
 
 // Lead with the band's current currency so it's always selectable.
 const currencies = [...new Set([form.default_currency, 'USD', 'EUR', 'GBP', 'CAD', 'AUD'])];
-
-// Helper text under the default booking-mode picker, from the selected mode.
-const bookingModeHint = computed(
-    () => props.bookingModes.find((m) => m.value === form.default_booking_mode)?.description ?? '',
-);
 
 // Filter existing genres for the AutoComplete; users can also type a brand-new
 // genre and press Enter to add it as a chip (the server creates it on save).
@@ -257,20 +252,26 @@ function submit() {
 
             <!-- Default booking mode -->
             <div class="space-y-1.5">
-                <label for="default_booking_mode" class="block text-sm font-medium">Default booking</label>
-                <Select
-                    input-id="default_booking_mode"
-                    v-model="form.default_booking_mode"
-                    :options="bookingModes"
-                    option-label="label"
-                    option-value="value"
-                    :disabled="!canManage"
-                    fluid
-                    :invalid="!!form.errors.default_booking_mode"
-                />
-                <small v-if="bookingModeHint" class="block text-muted dark:text-canvas/45">
-                    {{ bookingModeHint }} Pre-selected when you book a new gig.
-                </small>
+                <p class="block text-sm font-medium">Default booking mode</p>
+                <div class="flex overflow-hidden rounded-xl border border-surface dark:border-white/10">
+                    <button
+                        v-for="mode in bookingModes"
+                        :key="mode.value"
+                        type="button"
+                        :disabled="!canManage"
+                        class="flex flex-1 flex-col gap-0.5 px-4 py-3 text-left transition-colors"
+                        :class="form.default_booking_mode === mode.value
+                            ? 'bg-amp-violet text-white dark:bg-primary-600'
+                            : 'bg-white text-ink hover:bg-surface dark:bg-riser dark:text-canvas dark:hover:bg-white/5'"
+                        @click="canManage && (form.default_booking_mode = mode.value)"
+                    >
+                        <span class="text-sm font-semibold leading-tight">{{ mode.label }}</span>
+                        <span
+                            class="text-xs leading-snug"
+                            :class="form.default_booking_mode === mode.value ? 'text-white/75' : 'text-ink/55 dark:text-canvas/50'"
+                        >{{ mode.description }}</span>
+                    </button>
+                </div>
                 <small v-if="form.errors.default_booking_mode" class="text-cancelled">{{ form.errors.default_booking_mode }}</small>
             </div>
 
