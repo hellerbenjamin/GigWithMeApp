@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Auth\MagicLinkController;
 use App\Http\Controllers\Api\Auth\LogoutController;
 use App\Http\Controllers\Api\Member\GigController;
+use App\Http\Controllers\Api\Member\NotificationController;
 use App\Http\Controllers\Api\Member\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -35,5 +36,10 @@ Route::prefix('v1')->group(function () {
         Route::get('profile', [ProfileController::class, 'show']);
         Route::put('profile', [ProfileController::class, 'update']);
         Route::post('profile/avatar', [ProfileController::class, 'avatar']);
+
+        Route::post('notifications/push-token', [NotificationController::class, 'registerToken']);
+        Route::delete('notifications/push-token', [NotificationController::class, 'removeToken']);
+        Route::get('notifications/preferences', [NotificationController::class, 'showPreferences']);
+        Route::put('notifications/preferences', [NotificationController::class, 'updatePreferences']);
     });
 });

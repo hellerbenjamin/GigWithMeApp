@@ -3,6 +3,8 @@
 namespace App\Notifications;
 
 use App\Models\Gig;
+use App\Models\MobilePushToken;
+use App\Notifications\Channels\MobilePushChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -29,6 +31,13 @@ class GigReminder extends Notification implements ShouldQueue
     {
         $preferred = $notifiable->reminder_channels ?? ['email'];
         $channels = [];
+
+        if (
+            in_array('mobile', $preferred, true)
+            && MobilePushToken::where('user_id', $notifiable->getKey())->exists()
+        ) {
+            $channels[] = MobilePushChannel::class;
+        }
 
         if (
             in_array('push', $preferred, true)
@@ -70,6 +79,31 @@ class GigReminder extends Notification implements ShouldQueue
             ->greeting("Hi {$notifiable->name},")
             ->line($body)
             ->action('View gig details', route('gigs.show', $gig));
+    }
+
+    public function toMobilePush(object $notifiable): array
+    {
+        $gig = $this->gig->loadMissing('venue', 'band');
+
+        $where = $gig->venue?->name ?? $gig->name;
+        $when = $gig->date->format('D, M j');
+
+        $title = $this->daysBefore === 1
+            ? "{$gig->band->name}: gig tomorrow"
+            : "{$gig->band->name}: gig in {$this->daysBefore} days";
+
+        $body = $where;
+        if ($gig->start_time) {
+            $start = \Carbon\Carbon::createFromFormat('H:i:s', $gig->start_time)->format('g:i A');
+            $body .= " · {$start}";
+        }
+        $body .= " · {$when}";
+
+        return [
+            'title' => $title,
+            'body'  => $body,
+            'data'  => ['screen' => 'gig', 'gigId' => $gig->id],
+        ];
     }
 
     public function toWebPush(object $notifiable, Notification $notification): WebPushMessage

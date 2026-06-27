@@ -14,7 +14,7 @@ use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 use NotificationChannels\WebPush\HasPushSubscriptions;
 
-#[Fillable(['name', 'email', 'phone_number', 'avatar_path', 'timezone', 'password'])]
+#[Fillable(['name', 'email', 'phone_number', 'avatar_path', 'timezone', 'password', 'reminder_channels', 'reminder_days', 'calendar_token'])]
 #[Hidden(['password', 'remember_token', 'push_token', 'magic_link_token'])]
 class User extends Authenticatable
 {

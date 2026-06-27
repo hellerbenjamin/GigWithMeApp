@@ -31,7 +31,7 @@ class NotificationPreferencesController extends Controller
     {
         $data = $request->validate([
             'channels' => ['present', 'array'],
-            'channels.*' => [Rule::in(['email', 'push'])],
+            'channels.*' => [Rule::in(['email', 'push', 'mobile'])],
             'days' => ['present', 'array'],
             'days.*' => [Rule::in(self::AVAILABLE_DAYS)],
         ]);

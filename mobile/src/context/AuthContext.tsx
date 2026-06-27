@@ -1,3 +1,5 @@
+import { apiFetch } from '@/src/lib/api';
+import * as Notifications from 'expo-notifications';
 import * as SecureStore from 'expo-secure-store';
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
@@ -64,9 +66,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const signOut = useCallback(async () => {
+        if (state.token) {
+            try {
+                // Best-effort: send the push token so the server can remove it.
+                const expoPushToken = await Notifications.getExpoPushTokenAsync()
+                    .then((t) => t.data)
+                    .catch(() => null);
+
+                await apiFetch('/auth/logout', {
+                    method: 'POST',
+                    token: state.token,
+                    body: JSON.stringify({ push_token: expoPushToken }),
+                });
+            } catch {
+                // Ignore network errors during sign-out.
+            }
+        }
+
         await SecureStore.deleteItemAsync(TOKEN_KEY);
         setState({ token: null, user: null, bands: [], isLoading: false });
-    }, []);
+    }, [state.token]);
 
     const isAdmin = state.bands.some((b) => b.role === 'owner' || b.role === 'admin');
 

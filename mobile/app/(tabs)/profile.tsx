@@ -2,6 +2,7 @@ import { useAuth } from '@/src/context/AuthContext';
 import { apiFetch } from '@/src/lib/api';
 import type { Profile } from '@/src/types/profile';
 import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import {
     ActivityIndicator,
@@ -48,6 +49,7 @@ function inputStyle(focused: boolean) {
 
 export default function ProfileScreen() {
     const { token, user: authUser, signOut } = useAuth();
+    const router = useRouter();
     const [profile, setProfile] = useState<Profile | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -207,6 +209,15 @@ export default function ProfileScreen() {
                     <Text style={{ color: '#fff', fontWeight: '600', fontSize: 16 }}>
                         {saving ? 'Saving…' : 'Save changes'}
                     </Text>
+                </TouchableOpacity>
+
+                {/* Notifications link */}
+                <TouchableOpacity
+                    onPress={() => router.push('/notifications')}
+                    style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 14, borderTopWidth: 1, borderTopColor: '#F3F4F6', marginBottom: 8 }}
+                >
+                    <Text style={{ flex: 1, fontSize: 16 }}>Notification preferences</Text>
+                    <Text style={{ color: '#9CA3AF' }}>›</Text>
                 </TouchableOpacity>
 
                 {/* Sign out */}

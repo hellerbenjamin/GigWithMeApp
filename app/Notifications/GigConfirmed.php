@@ -53,6 +53,23 @@ class GigConfirmed extends Notification implements ShouldQueue
     /**
      * Get the web push representation of the notification.
      */
+    public function toMobilePush(object $notifiable): array
+    {
+        $gig = $this->gig->loadMissing('venue', 'band');
+
+        $where = $gig->venue?->name ?? $gig->name;
+        $when = $gig->date->format('D, M j');
+        $start = $gig->start_time
+            ? ' at '.\Carbon\Carbon::createFromFormat('H:i:s', $gig->start_time)->format('g:i A')
+            : '';
+
+        return [
+            'title' => "{$gig->band->name}: gig confirmed",
+            'body'  => "{$where} on {$when}{$start} is locked in.",
+            'data'  => ['screen' => 'gig', 'gigId' => $gig->id],
+        ];
+    }
+
     public function toWebPush(object $notifiable, Notification $notification): WebPushMessage
     {
         $gig = $this->gig->loadMissing('venue', 'band');

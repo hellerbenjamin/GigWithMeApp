@@ -55,6 +55,20 @@ class GigPollOpened extends Notification implements ShouldQueue
      * answer ("I'm in" / "Can't make it") without opening the app. The service
      * worker records the reply via the response token carried in data.
      */
+    public function toMobilePush(object $notifiable): array
+    {
+        $gig = $this->response->gig->loadMissing('venue', 'band');
+
+        $where = $gig->venue?->name ?? ($gig->name ?: 'a gig');
+        $when = $gig->date->format('D, M j');
+
+        return [
+            'title' => "{$gig->band->name}: can you make it?",
+            'body'  => "{$where} on {$when}. Open the app to reply.",
+            'data'  => ['screen' => 'gig', 'gigId' => $gig->id],
+        ];
+    }
+
     public function toWebPush(object $notifiable, Notification $notification): WebPushMessage
     {
         $gig = $this->response->gig->loadMissing('venue', 'band');
