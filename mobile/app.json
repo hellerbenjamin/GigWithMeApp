@@ -25,7 +25,13 @@
     },
     "scheme": "gigwithme",
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "GigWithMe uses your photo library to set your profile picture."
+        }
+      ]
     ]
   }
 }

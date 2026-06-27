@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Auth\MagicLinkController;
 use App\Http\Controllers\Api\Auth\LogoutController;
 use App\Http\Controllers\Api\Member\GigController;
+use App\Http\Controllers\Api\Member\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -30,5 +31,9 @@ Route::prefix('v1')->group(function () {
         Route::get('gigs', [GigController::class, 'index']);
         Route::get('gigs/{gig}', [GigController::class, 'show']);
         Route::post('gigs/{gig}/rsvp', [GigController::class, 'rsvp']);
+
+        Route::get('profile', [ProfileController::class, 'show']);
+        Route::put('profile', [ProfileController::class, 'update']);
+        Route::post('profile/avatar', [ProfileController::class, 'avatar']);
     });
 });
