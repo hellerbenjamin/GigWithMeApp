@@ -15,17 +15,29 @@ use Inertia\Response;
  * their invitation email and confirms their name. Push notification setup
  * follows on a dedicated step. The unguessable invite_token in the URL is
  * the authorization.
+ *
+ * Mobile visitors (iOS/Android) are shown a download interstitial instead of
+ * the web form — they should use the native app, not the PWA.
  */
 class AcceptInviteController extends Controller
 {
-    public function show(string $token): Response
+    public function show(Request $request, string $token): Response
     {
         $user = User::where('invite_token', $token)->firstOrFail();
 
+        $bandNames = $user->bands()->orderBy('name')->pluck('name');
+
+        if ($this->isMobile($request)) {
+            return Inertia::render('Invite/Download', [
+                'memberName' => $user->name,
+                'bandNames'  => $bandNames,
+            ]);
+        }
+
         return Inertia::render('Invite/Accept', [
-            'token' => $token,
+            'token'      => $token,
             'memberName' => $user->name,
-            'bandNames' => $user->bands()->orderBy('name')->pluck('name'),
+            'bandNames'  => $bandNames,
         ]);
     }
 
@@ -47,5 +59,12 @@ class AcceptInviteController extends Controller
         $request->session()->regenerate();
 
         return redirect()->route('invite.setup', $pushToken);
+    }
+
+    private function isMobile(Request $request): bool
+    {
+        $ua = $request->userAgent() ?? '';
+
+        return (bool) preg_match('/iphone|ipad|android/i', $ua);
     }
 }
