@@ -24,7 +24,8 @@ class LoginTest extends TestCase
             ->assertJsonStructure([
                 'token',
                 'token_type',
-                'user' => ['id', 'name', 'email'],
+                'user'  => ['id', 'name', 'email'],
+                'bands',
             ])
             ->assertJsonFragment([
                 'token_type' => 'Bearer',

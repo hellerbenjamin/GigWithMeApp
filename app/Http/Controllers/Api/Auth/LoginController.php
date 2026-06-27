@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers\Api\Auth;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\ApiController;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
-class LoginController extends Controller
+class LoginController extends ApiController
 {
     /**
      * Authenticate with email and password, returning a Sanctum bearer token.
@@ -30,19 +30,7 @@ class LoginController extends Controller
 
         /** @var User $user */
         $user = Auth::user();
-        $token = $user->createToken($data['device_name'])->plainTextToken;
 
-        return response()->json([
-            'token'      => $token,
-            'token_type' => 'Bearer',
-            'user'       => [
-                'id'           => $user->id,
-                'name'         => $user->name,
-                'email'        => $user->email,
-                'phone_number' => $user->phone_number,
-                'avatar_path'  => $user->avatar_path,
-                'timezone'     => $user->timezone,
-            ],
-        ]);
+        return $this->tokenResponse($user, $data['device_name']);
     }
 }

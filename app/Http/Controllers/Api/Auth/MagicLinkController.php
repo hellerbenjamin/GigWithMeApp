@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\Api\Auth;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\ApiController;
 use App\Models\User;
 use App\Notifications\MagicLinkNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class MagicLinkController extends Controller
+class MagicLinkController extends ApiController
 {
     /**
      * Send a magic sign-in link to the given email address.
@@ -70,23 +70,5 @@ class MagicLinkController extends Controller
         return response()->json([
             'message' => 'This sign-in link has expired or already been used.',
         ], 401);
-    }
-
-    private function tokenResponse(User $user, string $deviceName): JsonResponse
-    {
-        $token = $user->createToken($deviceName)->plainTextToken;
-
-        return response()->json([
-            'token'      => $token,
-            'token_type' => 'Bearer',
-            'user'       => [
-                'id'           => $user->id,
-                'name'         => $user->name,
-                'email'        => $user->email,
-                'phone_number' => $user->phone_number,
-                'avatar_path'  => $user->avatar_path,
-                'timezone'     => $user->timezone,
-            ],
-        ]);
     }
 }

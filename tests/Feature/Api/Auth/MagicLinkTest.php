@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Api\Auth;
 
+use App\Models\Band;
 use App\Models\User;
 use App\Notifications\MagicLinkNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -61,6 +62,8 @@ class MagicLinkTest extends TestCase
     public function test_exchanges_invite_token_for_bearer_token(): void
     {
         $user = User::factory()->invited()->create();
+        $band = Band::factory()->create(['name' => 'The Night Owls']);
+        $user->bands()->attach($band, ['role' => 'member']);
 
         $response = $this->postJson('/api/v1/auth/magic-link/exchange', [
             'token'       => $user->invite_token,
@@ -71,9 +74,11 @@ class MagicLinkTest extends TestCase
             ->assertJsonStructure([
                 'token',
                 'token_type',
-                'user' => ['id', 'name', 'email'],
+                'user'  => ['id', 'name', 'email'],
+                'bands' => [['id', 'name', 'slug', 'role']],
             ])
-            ->assertJsonFragment(['token_type' => 'Bearer']);
+            ->assertJsonFragment(['token_type' => 'Bearer'])
+            ->assertJsonFragment(['role' => 'member']);
     }
 
     public function test_invite_token_exchange_clears_the_token(): void
@@ -128,7 +133,7 @@ class MagicLinkTest extends TestCase
         ]);
 
         $response->assertOk()
-            ->assertJsonStructure(['token', 'token_type', 'user']);
+            ->assertJsonStructure(['token', 'token_type', 'user', 'bands']);
     }
 
     public function test_magic_link_token_is_consumed_after_exchange(): void
