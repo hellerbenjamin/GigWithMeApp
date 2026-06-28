@@ -64,10 +64,12 @@ class BookingSeasonController extends Controller
             ],
         ]);
 
+        $columnsArr = $columns->all();
         foreach ($season->venueOutreach as $outreach) {
             $col = $outreach->status->value;
-            $columns[$col]['items'][] = $this->presentOutreach($outreach);
+            $columnsArr[$col]['items'][] = $this->presentOutreach($outreach);
         }
+        $columns = collect($columnsArr);
 
         // All seasons for this band (for the season switcher and carry-forward dialog).
         $allSeasons = BookingSeason::where('band_id', $season->band_id)
