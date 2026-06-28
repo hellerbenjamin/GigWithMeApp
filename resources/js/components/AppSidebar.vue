@@ -24,6 +24,7 @@ const primaryNav = computed(() => {
     if (isManager.value) {
         items.push(
             { href: '/gigs', icon: 'pi pi-calendar', label: 'Gigs' },
+            { href: '/booking/seasons', icon: 'pi pi-map', label: 'Booking' },
             { href: '/venues', icon: 'pi pi-map-marker', label: 'Venues' },
             { href: '/band-members', icon: 'pi pi-users', label: 'Band Members' },
         );

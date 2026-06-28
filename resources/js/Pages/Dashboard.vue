@@ -16,6 +16,7 @@ const props = defineProps({
     // Mock data from the route until the real services land.
     stats: { type: Object, default: () => ({}) },
     upcomingGigs: { type: Array, default: () => [] },
+    followUpsDue: { type: Array, default: () => [] },
 });
 
 const page = usePage();
@@ -179,5 +180,36 @@ function gigDate(iso) {
             <p class="mt-3 text-sm font-medium">No gigs on the calendar yet</p>
             <p class="text-sm text-ink/50 dark:text-canvas/45">Book your first gig to see it here.</p>
         </div>
+    </div>
+
+    <!-- Booking follow-ups -->
+    <div v-if="followUpsDue.length" class="mt-8 rounded-2xl border border-encore-coral/30 bg-white shadow-sm dark:border-encore-coral/20 dark:bg-riser">
+        <div class="flex items-center justify-between border-b border-encore-coral/20 px-5 py-4 dark:border-encore-coral/15">
+            <div class="flex items-center gap-2">
+                <span class="grid size-6 place-items-center rounded-full bg-encore-coral/15">
+                    <i class="pi pi-clock text-xs text-encore-coral" />
+                </span>
+                <h3 class="font-display text-lg font-semibold tracking-tight">Booking Follow-ups Due</h3>
+            </div>
+            <Link href="/booking/seasons" class="text-sm font-medium text-amp-violet hover:underline dark:text-primary-300">
+                View roadmap
+            </Link>
+        </div>
+        <ul class="divide-y divide-surface dark:divide-white/10">
+            <Link
+                v-for="item in followUpsDue"
+                :key="item.id"
+                :href="`/booking/outreach/${item.id}`"
+                class="flex cursor-pointer items-center gap-4 px-5 py-3.5 transition-colors hover:bg-canvas dark:hover:bg-white/5"
+            >
+                <div class="min-w-0 flex-1">
+                    <p class="truncate font-medium text-sm">{{ item.venueName }}</p>
+                    <p class="text-xs text-ink/50 dark:text-canvas/45">{{ item.seasonName }} · {{ item.statusLabel }}</p>
+                </div>
+                <span class="shrink-0 text-xs font-semibold text-encore-coral">
+                    {{ item.daysOverdue === 0 ? 'Due today' : `${item.daysOverdue}d overdue` }}
+                </span>
+            </Link>
+        </ul>
     </div>
 </template>

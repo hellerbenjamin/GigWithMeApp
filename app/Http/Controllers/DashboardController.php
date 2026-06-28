@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Enums\BandUserRoleEnum;
+use App\Enums\OutreachStatusEnum;
 use App\Facades\ActiveBand;
 use App\Models\Gig;
 use App\Models\User;
+use App\Models\VenueOutreach;
 use App\Services\GigService;
+use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -43,7 +46,35 @@ class DashboardController extends Controller
             ],
             'upcomingGigs' => $gigs->getUpcomingGigs($band)
                 ->map(fn (Gig $gig) => $this->presentManager($gig)),
+            'followUpsDue' => $this->getFollowUpsDue($band->id),
         ]);
+    }
+
+    /** Venue outreach records where follow_up_on is today or past and status is not terminal. */
+    private function getFollowUpsDue(int $bandId): array
+    {
+        $terminalStatuses = collect(OutreachStatusEnum::cases())
+            ->filter(fn ($s) => $s->isTerminal())
+            ->map(fn ($s) => $s->value)
+            ->all();
+
+        return VenueOutreach::with(['venue', 'season'])
+            ->whereHas('season', fn ($q) => $q->where('band_id', $bandId))
+            ->whereNotNull('follow_up_on')
+            ->where('follow_up_on', '<=', Carbon::today())
+            ->whereNotIn('status', $terminalStatuses)
+            ->orderBy('follow_up_on')
+            ->get()
+            ->map(fn (VenueOutreach $o) => [
+                'id'         => $o->id,
+                'venueName'  => $o->venue->name,
+                'seasonName' => $o->season->name,
+                'followUpOn' => $o->follow_up_on->format('Y-m-d'),
+                'status'     => $o->status->value,
+                'statusLabel'=> $o->status->label(),
+                'daysOverdue'=> (int) $o->follow_up_on->diffInDays(Carbon::today()),
+            ])
+            ->all();
     }
 
     private function renderMember($band, User $user, GigService $gigs): Response

@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\BandMembers\BandMemberController;
+use App\Http\Controllers\Booking\BookingSeasonController;
+use App\Http\Controllers\Booking\OutreachContactController;
+use App\Http\Controllers\Booking\VenueOutreachController;
 use App\Http\Controllers\Calendar\CalendarController;
 use App\Http\Controllers\Notifications\NotificationPreferencesController;
 use App\Http\Controllers\Bands\BandController;
@@ -147,6 +150,24 @@ Route::middleware(['auth', HasActiveBand::class])->group(function () {
 
     // Band-scoped feature areas — placeholders until their controllers exist.
     Route::get('/music', static fn () => Inertia::render('Music/Index'))->name('music.index');
+
+    // Booking roadmap — venue outreach pipeline.
+    Route::redirect('/booking', '/booking/seasons')->name('booking');
+    Route::get('/booking/seasons', [BookingSeasonController::class, 'index'])->name('booking.seasons.index');
+    Route::post('/booking/seasons', [BookingSeasonController::class, 'store'])->name('booking.seasons.store');
+    Route::get('/booking/seasons/{season}', [BookingSeasonController::class, 'show'])->name('booking.seasons.show');
+    Route::put('/booking/seasons/{season}', [BookingSeasonController::class, 'update'])->name('booking.seasons.update');
+    Route::delete('/booking/seasons/{season}', [BookingSeasonController::class, 'destroy'])->name('booking.seasons.destroy');
+    Route::post('/booking/seasons/{season}/outreach', [VenueOutreachController::class, 'store'])->name('booking.outreach.store');
+    Route::post('/booking/seasons/{season}/carry-forward', [BookingSeasonController::class, 'carryForward'])->name('booking.seasons.carry-forward');
+
+    Route::get('/booking/outreach/{outreach}', [VenueOutreachController::class, 'show'])->name('booking.outreach.show');
+    Route::put('/booking/outreach/{outreach}', [VenueOutreachController::class, 'update'])->name('booking.outreach.update');
+    Route::delete('/booking/outreach/{outreach}', [VenueOutreachController::class, 'destroy'])->name('booking.outreach.destroy');
+
+    Route::post('/booking/outreach/{outreach}/contacts', [OutreachContactController::class, 'store'])->name('booking.contacts.store');
+    Route::put('/booking/contacts/{contact}', [OutreachContactController::class, 'update'])->name('booking.contacts.update');
+    Route::delete('/booking/contacts/{contact}', [OutreachContactController::class, 'destroy'])->name('booking.contacts.destroy');
 });
 
 require __DIR__.'/auth.php';
