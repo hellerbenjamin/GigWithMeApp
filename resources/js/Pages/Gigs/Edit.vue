@@ -55,6 +55,13 @@ const form = useForm({
 
 const pad = (n) => String(n).padStart(2, '0');
 
+function seedTime(field) {
+    if (form[field]) return;
+    const d = new Date();
+    d.setHours(12, 0, 0, 0);
+    form[field] = d;
+}
+
 // PrimeVue DatePicker hands back Date objects; the server wants Y-m-d / H:i
 // strings. Formatting from the local Date avoids the UTC-midnight day shift a
 // naive toISOString() would introduce.
@@ -211,6 +218,7 @@ function submit() {
                             hour-format="12"
                             placeholder="—"
                             :invalid="!!form.errors.load_in_time"
+                            @show="seedTime('load_in_time')"
                         />
                         <small v-if="form.errors.load_in_time" class="text-cancelled">{{ form.errors.load_in_time }}</small>
                     </div>
@@ -225,6 +233,7 @@ function submit() {
                             hour-format="12"
                             placeholder="—"
                             :invalid="!!form.errors.soundcheck_time"
+                            @show="seedTime('soundcheck_time')"
                         />
                         <small v-if="form.errors.soundcheck_time" class="text-cancelled">{{ form.errors.soundcheck_time }}</small>
                     </div>
@@ -239,6 +248,7 @@ function submit() {
                             hour-format="12"
                             placeholder="—"
                             :invalid="!!form.errors.doors_time"
+                            @show="seedTime('doors_time')"
                         />
                         <small v-if="form.errors.doors_time" class="text-cancelled">{{ form.errors.doors_time }}</small>
                     </div>
@@ -255,6 +265,7 @@ function submit() {
                             hour-format="12"
                             placeholder="—"
                             :invalid="!!form.errors.start_time"
+                            @show="seedTime('start_time')"
                         />
                         <small v-if="form.errors.start_time" class="text-cancelled">{{ form.errors.start_time }}</small>
                     </div>
@@ -269,6 +280,7 @@ function submit() {
                             hour-format="12"
                             placeholder="—"
                             :invalid="!!form.errors.end_time"
+                            @show="seedTime('end_time')"
                         />
                         <small v-if="form.errors.end_time" class="text-cancelled">{{ form.errors.end_time }}</small>
                     </div>

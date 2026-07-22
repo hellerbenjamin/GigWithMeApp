@@ -38,6 +38,13 @@ function asTime(d) {
     return d ? `${pad(d.getHours())}:${pad(d.getMinutes())}` : null;
 }
 
+function seedTime(field) {
+    if (form[field]) return;
+    const d = new Date();
+    d.setHours(12, 0, 0, 0);
+    form[field] = d;
+}
+
 function submit() {
     form
         .transform((data) => ({
@@ -292,6 +299,7 @@ function submit() {
                             hour-format="12"
                             placeholder="—"
                             :invalid="!!form.errors.default_load_in_time"
+                            @show="seedTime('default_load_in_time')"
                         />
                         <small v-if="form.errors.default_load_in_time" class="text-cancelled">{{ form.errors.default_load_in_time }}</small>
                     </div>
@@ -306,6 +314,7 @@ function submit() {
                             hour-format="12"
                             placeholder="—"
                             :invalid="!!form.errors.default_soundcheck_time"
+                            @show="seedTime('default_soundcheck_time')"
                         />
                         <small v-if="form.errors.default_soundcheck_time" class="text-cancelled">{{ form.errors.default_soundcheck_time }}</small>
                     </div>
@@ -320,6 +329,7 @@ function submit() {
                             hour-format="12"
                             placeholder="—"
                             :invalid="!!form.errors.default_doors_time"
+                            @show="seedTime('default_doors_time')"
                         />
                         <small v-if="form.errors.default_doors_time" class="text-cancelled">{{ form.errors.default_doors_time }}</small>
                     </div>
@@ -336,6 +346,7 @@ function submit() {
                             hour-format="12"
                             placeholder="—"
                             :invalid="!!form.errors.default_start_time"
+                            @show="seedTime('default_start_time')"
                         />
                         <small v-if="form.errors.default_start_time" class="text-cancelled">{{ form.errors.default_start_time }}</small>
                     </div>
@@ -350,6 +361,7 @@ function submit() {
                             hour-format="12"
                             placeholder="—"
                             :invalid="!!form.errors.default_end_time"
+                            @show="seedTime('default_end_time')"
                         />
                         <small v-if="form.errors.default_end_time" class="text-cancelled">{{ form.errors.default_end_time }}</small>
                     </div>
