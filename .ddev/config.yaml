@@ -1,6 +1,6 @@
 name: band
 type: laravel
-docroot: "public"
+docroot: public
 php_version: "8.5"
 webserver_type: nginx-fpm
 xdebug_enabled: false
@@ -9,6 +9,7 @@ additional_fqdns: []
 database:
     type: postgres
     version: "18"
+bind_all_interfaces: true
 use_dns_when_possible: true
 composer_version: "2"
 web_environment: []
