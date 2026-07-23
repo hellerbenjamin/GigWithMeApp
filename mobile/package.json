@@ -5,6 +5,7 @@
   "dependencies": {
     "@expo-google-fonts/bricolage-grotesque": "^0.4.1",
     "expo": "~56.0.16",
+    "expo-clipboard": "~56.0.4",
     "expo-constants": "~56.0.21",
     "expo-dev-client": "~56.0.23",
     "expo-device": "^56.0.4",
@@ -21,7 +22,13 @@
     "react-native-screens": "4.25.2"
   },
   "devDependencies": {
+    "@react-native/jest-preset": "^0.85.3",
+    "@testing-library/react-native": "^13.3.3",
+    "@types/jest": "^29.5.14",
     "@types/react": "~19.2.2",
+    "jest": "^29.7.0",
+    "jest-expo": "^57.0.2",
+    "react-test-renderer": "19.2.3",
     "typescript": "~6.0.3"
   },
   "scripts": {
@@ -31,7 +38,17 @@
     "ios": "expo start --ios --dev-client",
     "build:dev": "eas build --profile development --platform android",
     "tunnel": "bash scripts/dev-tunnel.sh",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "test": "jest"
+  },
+  "jest": {
+    "preset": "jest-expo",
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/$1"
+    },
+    "transformIgnorePatterns": [
+      "node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/.*|native-base|react-native-svg))"
+    ]
   },
   "private": true
 }
