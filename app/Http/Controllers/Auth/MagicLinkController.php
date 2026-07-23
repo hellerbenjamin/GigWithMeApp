@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Notifications\MagicLinkNotification;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -64,5 +65,18 @@ class MagicLinkController extends Controller
         $request->session()->regenerate();
 
         return redirect()->intended(route('dashboard'));
+    }
+
+    /**
+     * Bridge an email link into the mobile app. Renders a page that redirects
+     * to the gigwithme:// scheme so the app's exchange screen can swap the
+     * one-time token for a Sanctum bearer. The token is not consumed here;
+     * the mobile exchange endpoint does that.
+     */
+    public function mobile(string $token): View
+    {
+        return view('auth.mobile-bridge', [
+            'deepLink' => 'gigwithme://exchange?token=' . urlencode($token),
+        ]);
     }
 }

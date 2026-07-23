@@ -3,7 +3,7 @@ import { useAuth } from '@/src/context/AuthContext';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Text, View } from 'react-native';
-import { getDeviceNameAsync } from 'expo-device';
+import * as Device from 'expo-device';
 
 // Handles deep links of the form: gigwithme://exchange?token=<token>
 // The root _layout redirects here after parsing the URL via expo-router.
@@ -21,7 +21,7 @@ export default function ExchangeScreen() {
 
         async function exchange() {
             try {
-                const deviceName = (await getDeviceNameAsync()) ?? 'Mobile device';
+                const deviceName = Device.deviceName ?? 'Mobile device';
                 const res = await apiFetch('/auth/magic-link/exchange', {
                     method: 'POST',
                     body: JSON.stringify({ token, device_name: deviceName }),

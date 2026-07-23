@@ -23,7 +23,7 @@ class MagicLinkController extends ApiController
 
         if ($user) {
             $token = $user->generateMagicToken();
-            $user->notify(new MagicLinkNotification($token));
+            $user->notify(new MagicLinkNotification($token, mobile: true));
         }
 
         return response()->json([

@@ -23,6 +23,13 @@ Route::get('login/link/{token}', [MagicLinkController::class, 'authenticate'])
     ->middleware('throttle:10,1')
     ->name('login.magic.authenticate');
 
+// Bridge an email link into the mobile app via the gigwithme:// URL scheme.
+// Used by the mobile magic-link email; opens in the browser, then hands the
+// token to the app's exchange screen.
+Route::get('login/link/{token}/app', [MagicLinkController::class, 'mobile'])
+    ->middleware('throttle:10,1')
+    ->name('login.magic.mobile');
+
 Route::middleware('auth')->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 });
