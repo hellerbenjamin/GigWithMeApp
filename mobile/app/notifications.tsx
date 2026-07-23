@@ -1,13 +1,13 @@
 import { useAuth } from '@/src/context/AuthContext';
 import { apiFetch } from '@/src/lib/api';
 import { type Theme, useTheme } from '@/src/theme';
-import * as Clipboard from 'expo-clipboard';
 import { useCallback, useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
     Linking,
     ScrollView,
+    Share,
     Switch,
     Text,
     TouchableOpacity,
@@ -44,7 +44,6 @@ export default function NotificationsScreen() {
     const [prefs, setPrefs] = useState<Preferences | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [copied, setCopied] = useState(false);
     const [resetting, setResetting] = useState(false);
 
     const load = useCallback(async () => {
@@ -91,11 +90,16 @@ export default function NotificationsScreen() {
         }
     }
 
-    async function copyCalendarUrl() {
+    async function shareCalendarUrl() {
         if (!prefs) return;
-        await Clipboard.setStringAsync(prefs.calendar_url);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        // The share sheet lets the member copy the link or send it to another
+        // app; it avoids a native clipboard module so no dev-client rebuild is
+        // needed.
+        try {
+            await Share.share({ message: prefs.calendar_url });
+        } catch {
+            // Sheet dismissed; nothing to do.
+        }
     }
 
     function subscribeToCalendar() {
@@ -262,10 +266,10 @@ export default function NotificationsScreen() {
                         <Text style={{ color: theme.colors.onPrimary, fontWeight: '600' }}>Subscribe</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                        onPress={copyCalendarUrl}
+                        onPress={shareCalendarUrl}
                         style={{ flex: 1, backgroundColor: theme.colors.surface, borderRadius: theme.radius.md, paddingVertical: 11, alignItems: 'center', borderWidth: 1, borderColor: theme.colors.border }}
                     >
-                        <Text style={{ color: theme.colors.text, fontWeight: '600' }}>{copied ? 'Copied!' : 'Copy'}</Text>
+                        <Text style={{ color: theme.colors.text, fontWeight: '600' }}>Share</Text>
                     </TouchableOpacity>
                 </View>
                 <TouchableOpacity onPress={confirmResetCalendar} disabled={resetting} style={{ marginTop: 14, alignItems: 'center' }}>
