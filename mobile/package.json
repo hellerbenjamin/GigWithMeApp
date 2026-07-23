@@ -28,6 +28,7 @@
     "android": "expo start --android --dev-client",
     "ios": "expo start --ios --dev-client",
     "build:dev": "eas build --profile development --platform android",
+    "tunnel": "bash scripts/dev-tunnel.sh",
     "web": "expo start --web"
   },
   "private": true
