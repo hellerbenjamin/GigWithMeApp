@@ -1,10 +1,12 @@
 import { useAuth } from '@/src/context/AuthContext';
 import { apiFetch } from '@/src/lib/api';
 import { type Theme, useTheme } from '@/src/theme';
+import * as Clipboard from 'expo-clipboard';
 import { useCallback, useEffect, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
+    Linking,
     ScrollView,
     Switch,
     Text,
@@ -16,6 +18,7 @@ interface Preferences {
     channels: string[];
     days: number[];
     available_days: number[];
+    calendar_url: string;
 }
 
 function dayLabel(d: number): string {
@@ -41,6 +44,8 @@ export default function NotificationsScreen() {
     const [prefs, setPrefs] = useState<Preferences | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [copied, setCopied] = useState(false);
+    const [resetting, setResetting] = useState(false);
 
     const load = useCallback(async () => {
         const res = await apiFetch('/notifications/preferences', { token: token! });
@@ -83,6 +88,46 @@ export default function NotificationsScreen() {
             Alert.alert('Saved', 'Notification preferences updated.');
         } finally {
             setSaving(false);
+        }
+    }
+
+    async function copyCalendarUrl() {
+        if (!prefs) return;
+        await Clipboard.setStringAsync(prefs.calendar_url);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    }
+
+    function subscribeToCalendar() {
+        if (!prefs) return;
+        // webcal:// hands the feed straight to the OS calendar app to subscribe.
+        Linking.openURL(prefs.calendar_url.replace(/^https?:\/\//, 'webcal://')).catch(() => {
+            Alert.alert('Could not open your calendar app', 'Copy the URL and add it manually instead.');
+        });
+    }
+
+    function confirmResetCalendar() {
+        Alert.alert(
+            'Reset calendar link?',
+            'Your current URL stops working. Any calendar app subscribed to it will need the new link.',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Reset', style: 'destructive', onPress: resetCalendar },
+            ],
+        );
+    }
+
+    async function resetCalendar() {
+        setResetting(true);
+        try {
+            const res = await apiFetch('/notifications/calendar/reset', { method: 'POST', token: token! });
+            if (!res.ok) {
+                Alert.alert('Error', 'Could not reset the link. Please try again.');
+                return;
+            }
+            setPrefs((await res.json()).data);
+        } finally {
+            setResetting(false);
         }
     }
 
@@ -198,6 +243,37 @@ export default function NotificationsScreen() {
                     {saving ? 'Saving…' : 'Save preferences'}
                 </Text>
             </TouchableOpacity>
+
+            {/* Calendar sync */}
+            <Text style={{ ...sectionLabel(theme), marginTop: 40 }}>Calendar sync</Text>
+            <Text style={{ fontSize: 14, color: theme.colors.textMuted, marginBottom: 16, marginTop: -4 }}>
+                Subscribe in any calendar app (Google, Apple, Outlook) and your gigs appear
+                automatically. The feed updates as gigs change.
+            </Text>
+            <View style={{ ...groupCard, padding: 16 }}>
+                <Text style={{ fontSize: 12, color: theme.colors.textSubtle, fontFamily: 'monospace' }} numberOfLines={2}>
+                    {prefs!.calendar_url}
+                </Text>
+                <View style={{ flexDirection: 'row', gap: 10, marginTop: 14 }}>
+                    <TouchableOpacity
+                        onPress={subscribeToCalendar}
+                        style={{ flex: 1, backgroundColor: theme.colors.primary, borderRadius: theme.radius.md, paddingVertical: 11, alignItems: 'center' }}
+                    >
+                        <Text style={{ color: theme.colors.onPrimary, fontWeight: '600' }}>Subscribe</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={copyCalendarUrl}
+                        style={{ flex: 1, backgroundColor: theme.colors.surface, borderRadius: theme.radius.md, paddingVertical: 11, alignItems: 'center', borderWidth: 1, borderColor: theme.colors.border }}
+                    >
+                        <Text style={{ color: theme.colors.text, fontWeight: '600' }}>{copied ? 'Copied!' : 'Copy'}</Text>
+                    </TouchableOpacity>
+                </View>
+                <TouchableOpacity onPress={confirmResetCalendar} disabled={resetting} style={{ marginTop: 14, alignItems: 'center' }}>
+                    <Text style={{ color: theme.colors.textSubtle, fontSize: 13 }}>
+                        {resetting ? 'Resetting…' : 'Reset calendar link'}
+                    </Text>
+                </TouchableOpacity>
+            </View>
         </ScrollView>
     );
 }

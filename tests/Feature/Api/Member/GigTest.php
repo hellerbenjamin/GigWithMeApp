@@ -91,6 +91,43 @@ class GigTest extends TestCase
         $this->getJson('/api/v1/gigs')->assertUnauthorized();
     }
 
+    public function test_index_includes_the_members_own_rsvp(): void
+    {
+        [$user, $band, $gig] = $this->memberWithBandAndGig(['status' => GigStatusEnum::Pending]);
+
+        GigMemberResponse::factory()->create([
+            'gig_id'  => $gig->id,
+            'user_id' => $user->id,
+            'status'  => 'available',
+        ]);
+
+        // Another member's response on the same gig must not leak into this
+        // member's list.
+        $other = User::factory()->create();
+        $other->bands()->attach($band, ['role' => 'member']);
+        GigMemberResponse::factory()->create([
+            'gig_id'  => $gig->id,
+            'user_id' => $other->id,
+            'status'  => 'unavailable',
+        ]);
+
+        $this->withToken($user->createToken('test')->plainTextToken)
+            ->getJson('/api/v1/gigs')
+            ->assertOk()
+            ->assertJsonPath('data.0.rsvp.status', 'available')
+            ->assertJsonPath('data.0.rsvp.label', 'Available');
+    }
+
+    public function test_index_rsvp_is_null_when_the_member_has_not_responded(): void
+    {
+        [$user] = $this->memberWithBandAndGig();
+
+        $this->withToken($user->createToken('test')->plainTextToken)
+            ->getJson('/api/v1/gigs')
+            ->assertOk()
+            ->assertJsonPath('data.0.rsvp', null);
+    }
+
     // -------------------------------------------------------------------------
     // GET /api/v1/gigs/{id}
     // -------------------------------------------------------------------------

@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ApiController;
 use App\Models\MobilePushToken;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class NotificationController extends ApiController
@@ -60,8 +61,21 @@ class NotificationController extends ApiController
                 'channels'      => $user->reminder_channels ?? ['email'],
                 'days'          => $user->reminder_days ?? [7, 1],
                 'available_days' => self::AVAILABLE_DAYS,
+                // Private iCal feed the member subscribes to in their calendar app.
+                'calendar_url'  => route('calendar.feed', ['calendarToken' => $user->ensureCalendarToken()]),
             ],
         ]);
+    }
+
+    /**
+     * Reset the member's calendar feed token, breaking any existing
+     * subscriptions. Returns the fresh preferences (with the new URL).
+     */
+    public function resetCalendar(Request $request): JsonResponse
+    {
+        $request->user()->forceFill(['calendar_token' => Str::random(64)])->save();
+
+        return $this->showPreferences($request);
     }
 
     /**

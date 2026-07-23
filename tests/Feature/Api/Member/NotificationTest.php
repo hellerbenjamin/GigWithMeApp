@@ -189,4 +189,37 @@ class NotificationTest extends TestCase
             'days'     => [1],
         ])->assertUnauthorized();
     }
+
+    // -------------------------------------------------------------------------
+    // Calendar feed
+    // -------------------------------------------------------------------------
+
+    public function test_preferences_include_a_calendar_feed_url(): void
+    {
+        $user = User::factory()->create();
+
+        $this->withToken($user->createToken('test')->plainTextToken)
+            ->getJson('/api/v1/notifications/preferences')
+            ->assertOk()
+            ->assertJsonPath('data.calendar_url', fn ($url) => is_string($url) && str_ends_with($url, '.ics'));
+
+        $this->assertNotNull($user->fresh()->calendar_token);
+    }
+
+    public function test_calendar_reset_changes_the_feed_url(): void
+    {
+        $user = User::factory()->create();
+        $token = $user->createToken('test')->plainTextToken;
+
+        $before = $this->withToken($token)
+            ->getJson('/api/v1/notifications/preferences')
+            ->json('data.calendar_url');
+
+        $after = $this->withToken($token)
+            ->postJson('/api/v1/notifications/calendar/reset')
+            ->assertOk()
+            ->json('data.calendar_url');
+
+        $this->assertNotSame($before, $after);
+    }
 }

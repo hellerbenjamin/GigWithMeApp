@@ -49,5 +49,6 @@ Route::prefix('v1')->group(function () {
         Route::delete('notifications/push-token', [NotificationController::class, 'removeToken']);
         Route::get('notifications/preferences', [NotificationController::class, 'showPreferences']);
         Route::put('notifications/preferences', [NotificationController::class, 'updatePreferences']);
+        Route::post('notifications/calendar/reset', [NotificationController::class, 'resetCalendar']);
     });
 });

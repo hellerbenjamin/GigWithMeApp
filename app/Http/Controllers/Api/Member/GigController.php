@@ -25,12 +25,27 @@ class GigController extends ApiController
         $gigs = Gig::whereIn('band_id', $bandIds)
             ->whereDate('date', '>=', Carbon::today()->toDateString())
             ->where('status', '!=', GigStatusEnum::Cancelled->value)
-            ->with(['venue:id,name', 'band:id,name,slug'])
+            ->with([
+                'venue:id,name',
+                'band:id,name,slug',
+                // Only the member's own response, so we can show their RSVP inline.
+                'memberResponses' => fn ($q) => $q->where('user_id', $user->id),
+            ])
             ->orderBy('date')
             ->orderBy('start_time')
             ->limit(50)
             ->get()
-            ->map(fn (Gig $gig) => $this->gigSummary($gig));
+            ->map(function (Gig $gig) {
+                $response = $gig->memberResponses->first();
+
+                return [
+                    ...$this->gigSummary($gig),
+                    'rsvp' => $response ? [
+                        'status' => $response->status->value,
+                        'label'  => $response->status->label(),
+                    ] : null,
+                ];
+            });
 
         return response()->json(['data' => $gigs]);
     }

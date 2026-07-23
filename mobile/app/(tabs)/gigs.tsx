@@ -18,8 +18,15 @@ function formatDate(iso: string): string {
     return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 }
 
+function greeting(): string {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 18) return 'Good afternoon';
+    return 'Good evening';
+}
+
 export default function GigsScreen() {
-    const { token } = useAuth();
+    const { token, user } = useAuth();
     const theme = useTheme();
     const router = useRouter();
     const [gigs, setGigs] = useState<GigSummary[]>([]);
@@ -52,6 +59,8 @@ export default function GigsScreen() {
         );
     }
 
+    const firstName = user?.name?.split(' ')[0] ?? 'there';
+
     return (
         <FlatList
             data={gigs}
@@ -67,9 +76,14 @@ export default function GigsScreen() {
                 />
             }
             ListHeaderComponent={
-                <Text style={{ fontSize: 28, fontFamily: theme.fonts.display, color: theme.colors.text, paddingHorizontal: 20, marginBottom: 16 }}>
-                    Gigs
-                </Text>
+                <View style={{ paddingHorizontal: 20, marginBottom: 16 }}>
+                    <Text style={{ fontSize: 28, fontFamily: theme.fonts.display, color: theme.colors.text }}>
+                        {greeting()}, {firstName}
+                    </Text>
+                    <Text style={{ color: theme.colors.textMuted, marginTop: 2 }}>
+                        Here's what's coming up.
+                    </Text>
+                </View>
             }
             ListEmptyComponent={
                 <View style={{ alignItems: 'center', paddingTop: 60 }}>
@@ -77,7 +91,10 @@ export default function GigsScreen() {
                 </View>
             }
             renderItem={({ item }) => {
-                const status = statusColors(theme, item.status);
+                // Show the member's own RSVP for poll gigs; otherwise the gig status.
+                const badge = item.rsvp
+                    ? { ...statusColors(theme, item.rsvp.status), label: item.rsvp.label }
+                    : { ...statusColors(theme, item.status), label: item.status };
                 return (
                     <TouchableOpacity
                         onPress={() => router.push(`/gigs/${item.id}`)}
@@ -101,13 +118,13 @@ export default function GigsScreen() {
                                 {item.name ?? item.band.name}
                             </Text>
                             <View style={{
-                                backgroundColor: status.bg,
+                                backgroundColor: badge.bg,
                                 borderRadius: theme.radius.pill,
                                 paddingHorizontal: 8,
                                 paddingVertical: 2,
                             }}>
-                                <Text style={{ fontSize: 11, fontWeight: '600', color: status.fg }}>
-                                    {item.status}
+                                <Text style={{ fontSize: 11, fontWeight: '600', color: badge.fg, textTransform: 'capitalize' }}>
+                                    {badge.label}
                                 </Text>
                             </View>
                         </View>
