@@ -93,4 +93,44 @@ class MagicLinkTest extends TestCase
 
         $this->assertAuthenticatedAs($user);
     }
+
+    // -------------------------------------------------------------------------
+    // Mobile bridge — hands the token to the app via the gigwithme:// scheme.
+    // -------------------------------------------------------------------------
+
+    public function test_the_mobile_bridge_renders_the_deep_link(): void
+    {
+        $user = User::factory()->create();
+        $token = $user->generateMagicToken();
+
+        $this->get("/login/link/{$token}/app")
+            ->assertOk()
+            ->assertSee("gigwithme://exchange?token={$token}", false);
+    }
+
+    public function test_the_mobile_bridge_does_not_consume_the_token(): void
+    {
+        // The app's exchange endpoint consumes the token, not the bridge page,
+        // so opening the bridge must leave the token usable.
+        $user = User::factory()->create();
+        $token = $user->generateMagicToken();
+
+        $this->get("/login/link/{$token}/app")->assertOk();
+
+        $this->assertTrue($user->fresh()->isValidMagicToken($token));
+    }
+
+    public function test_the_web_magic_link_email_targets_the_web_authenticate_route(): void
+    {
+        Notification::fake();
+        $user = User::factory()->create();
+
+        $this->post('/login/link', ['email' => $user->email]);
+
+        Notification::assertSentTo($user, MagicLinkNotification::class, function ($notification) use ($user) {
+            $url = $notification->toMail($user)->actionUrl;
+
+            return str_contains($url, '/login/link/') && ! str_ends_with($url, '/app');
+        });
+    }
 }

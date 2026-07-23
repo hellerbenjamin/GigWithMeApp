@@ -30,6 +30,22 @@ class MagicLinkTest extends TestCase
         Notification::assertSentTo($user, MagicLinkNotification::class);
     }
 
+    public function test_the_mobile_magic_link_email_targets_the_app_bridge(): void
+    {
+        Notification::fake();
+        $user = User::factory()->create();
+
+        $this->postJson('/api/v1/auth/magic-link', ['email' => $user->email])->assertOk();
+
+        // Mobile requests must email the bridge link (…/app), which redirects
+        // into the app, not the web session-login route.
+        Notification::assertSentTo($user, MagicLinkNotification::class, function ($notification) use ($user) {
+            $url = $notification->toMail($user)->actionUrl;
+
+            return str_contains($url, '/login/link/') && str_ends_with($url, '/app');
+        });
+    }
+
     public function test_returns_200_for_unknown_email_without_sending(): void
     {
         Notification::fake();
