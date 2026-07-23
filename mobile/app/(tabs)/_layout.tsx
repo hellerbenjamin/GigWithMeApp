@@ -1,11 +1,23 @@
 import { useAuth } from '@/src/context/AuthContext';
+import { useTheme } from '@/src/theme';
 import { Tabs } from 'expo-router';
 
 export default function TabLayout() {
     const { isAdmin } = useAuth();
+    const theme = useTheme();
 
     return (
-        <Tabs screenOptions={{ headerShown: false }}>
+        <Tabs
+            screenOptions={{
+                headerShown: false,
+                tabBarActiveTintColor: theme.colors.primary,
+                tabBarInactiveTintColor: theme.colors.textSubtle,
+                tabBarStyle: {
+                    backgroundColor: theme.colors.card,
+                    borderTopColor: theme.colors.border,
+                },
+            }}
+        >
             <Tabs.Screen
                 name="gigs"
                 options={{

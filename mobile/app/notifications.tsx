@@ -1,5 +1,6 @@
 import { useAuth } from '@/src/context/AuthContext';
 import { apiFetch } from '@/src/lib/api';
+import { type Theme, useTheme } from '@/src/theme';
 import { useCallback, useEffect, useState } from 'react';
 import {
     ActivityIndicator,
@@ -23,8 +24,20 @@ function dayLabel(d: number): string {
     return `${d} days before`;
 }
 
+function sectionLabel(theme: Theme) {
+    return {
+        fontSize: 13,
+        fontWeight: '600' as const,
+        color: theme.colors.textMuted,
+        marginBottom: 12,
+        textTransform: 'uppercase' as const,
+        letterSpacing: 0.5,
+    };
+}
+
 export default function NotificationsScreen() {
     const { token } = useAuth();
+    const theme = useTheme();
     const [prefs, setPrefs] = useState<Preferences | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -75,8 +88,8 @@ export default function NotificationsScreen() {
 
     if (loading) {
         return (
-            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                <ActivityIndicator />
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.background }}>
+                <ActivityIndicator color={theme.colors.primary} />
             </View>
         );
     }
@@ -86,18 +99,27 @@ export default function NotificationsScreen() {
         { key: 'email', label: 'Email', description: 'Reminders sent to your inbox' },
     ];
 
+    const groupCard = {
+        backgroundColor: theme.colors.card,
+        borderRadius: theme.radius.lg,
+        borderWidth: 1,
+        borderColor: theme.colors.border,
+        overflow: 'hidden' as const,
+    };
+
     return (
-        <ScrollView contentContainerStyle={{ paddingTop: 60, paddingBottom: 48, paddingHorizontal: 20 }}>
-            <Text style={{ fontSize: 28, fontWeight: '700', marginBottom: 8 }}>Notifications</Text>
-            <Text style={{ fontSize: 15, color: '#6B7280', marginBottom: 32 }}>
+        <ScrollView
+            style={{ backgroundColor: theme.colors.background }}
+            contentContainerStyle={{ paddingTop: 60, paddingBottom: 48, paddingHorizontal: 20 }}
+        >
+            <Text style={{ fontSize: 28, fontFamily: theme.fonts.display, color: theme.colors.text, marginBottom: 8 }}>Notifications</Text>
+            <Text style={{ fontSize: 15, color: theme.colors.textMuted, marginBottom: 32 }}>
                 Choose how and when GigWithMe reminds you about upcoming gigs.
             </Text>
 
             {/* Channels */}
-            <Text style={{ fontSize: 13, fontWeight: '600', color: '#6B7280', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                How to notify me
-            </Text>
-            <View style={{ backgroundColor: '#fff', borderRadius: 12, borderWidth: 1, borderColor: '#E5E7EB', overflow: 'hidden', marginBottom: 28 }}>
+            <Text style={sectionLabel(theme)}>How to notify me</Text>
+            <View style={{ ...groupCard, marginBottom: 28 }}>
                 {CHANNELS.map((ch, i) => (
                     <View
                         key={ch.key}
@@ -107,71 +129,72 @@ export default function NotificationsScreen() {
                             paddingHorizontal: 16,
                             paddingVertical: 14,
                             borderTopWidth: i > 0 ? 1 : 0,
-                            borderTopColor: '#F3F4F6',
+                            borderTopColor: theme.colors.divider,
                         }}
                     >
                         <View style={{ flex: 1 }}>
-                            <Text style={{ fontSize: 16, fontWeight: '500' }}>{ch.label}</Text>
-                            <Text style={{ fontSize: 13, color: '#9CA3AF', marginTop: 2 }}>{ch.description}</Text>
+                            <Text style={{ fontSize: 16, fontWeight: '500', color: theme.colors.text }}>{ch.label}</Text>
+                            <Text style={{ fontSize: 13, color: theme.colors.textSubtle, marginTop: 2 }}>{ch.description}</Text>
                         </View>
                         <Switch
                             value={prefs!.channels.includes(ch.key)}
                             onValueChange={() => toggleChannel(ch.key)}
-                            trackColor={{ true: '#7C3AED' }}
+                            trackColor={{ true: theme.colors.primary }}
                         />
                     </View>
                 ))}
             </View>
 
             {/* Timing */}
-            <Text style={{ fontSize: 13, fontWeight: '600', color: '#6B7280', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                When to notify me
-            </Text>
-            <View style={{ backgroundColor: '#fff', borderRadius: 12, borderWidth: 1, borderColor: '#E5E7EB', overflow: 'hidden', marginBottom: 36 }}>
-                {prefs!.available_days.map((d, i) => (
-                    <TouchableOpacity
-                        key={d}
-                        onPress={() => toggleDay(d)}
-                        style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            paddingHorizontal: 16,
-                            paddingVertical: 14,
-                            borderTopWidth: i > 0 ? 1 : 0,
-                            borderTopColor: '#F3F4F6',
-                        }}
-                    >
-                        <Text style={{ flex: 1, fontSize: 16 }}>{dayLabel(d)}</Text>
-                        <View style={{
-                            width: 22,
-                            height: 22,
-                            borderRadius: 11,
-                            borderWidth: 2,
-                            borderColor: prefs!.days.includes(d) ? '#7C3AED' : '#D1D5DB',
-                            backgroundColor: prefs!.days.includes(d) ? '#7C3AED' : 'transparent',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}>
-                            {prefs!.days.includes(d) && (
-                                <Text style={{ color: '#fff', fontSize: 13, fontWeight: '700' }}>✓</Text>
-                            )}
-                        </View>
-                    </TouchableOpacity>
-                ))}
+            <Text style={sectionLabel(theme)}>When to notify me</Text>
+            <View style={{ ...groupCard, marginBottom: 36 }}>
+                {prefs!.available_days.map((d, i) => {
+                    const on = prefs!.days.includes(d);
+                    return (
+                        <TouchableOpacity
+                            key={d}
+                            onPress={() => toggleDay(d)}
+                            style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                paddingHorizontal: 16,
+                                paddingVertical: 14,
+                                borderTopWidth: i > 0 ? 1 : 0,
+                                borderTopColor: theme.colors.divider,
+                            }}
+                        >
+                            <Text style={{ flex: 1, fontSize: 16, color: theme.colors.text }}>{dayLabel(d)}</Text>
+                            <View style={{
+                                width: 22,
+                                height: 22,
+                                borderRadius: theme.radius.pill,
+                                borderWidth: 2,
+                                borderColor: on ? theme.colors.primary : theme.colors.borderStrong,
+                                backgroundColor: on ? theme.colors.primary : 'transparent',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}>
+                                {on && (
+                                    <Text style={{ color: theme.colors.onPrimary, fontSize: 13, fontWeight: '700' }}>✓</Text>
+                                )}
+                            </View>
+                        </TouchableOpacity>
+                    );
+                })}
             </View>
 
             <TouchableOpacity
                 onPress={save}
                 disabled={saving}
                 style={{
-                    backgroundColor: '#7C3AED',
-                    borderRadius: 10,
+                    backgroundColor: theme.colors.primary,
+                    borderRadius: theme.radius.md,
                     paddingVertical: 14,
                     alignItems: 'center',
                     opacity: saving ? 0.5 : 1,
                 }}
             >
-                <Text style={{ color: '#fff', fontWeight: '600', fontSize: 16 }}>
+                <Text style={{ color: theme.colors.onPrimary, fontWeight: '600', fontSize: 16 }}>
                     {saving ? 'Saving…' : 'Save preferences'}
                 </Text>
             </TouchableOpacity>

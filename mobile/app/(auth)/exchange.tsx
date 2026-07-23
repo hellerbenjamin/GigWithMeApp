@@ -1,8 +1,9 @@
 import { apiFetch } from '@/src/lib/api';
 import { useAuth } from '@/src/context/AuthContext';
+import { useTheme } from '@/src/theme';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, Text, View } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
 import * as Device from 'expo-device';
 
 // Handles deep links of the form: gigwithme://exchange?token=<token>
@@ -10,6 +11,7 @@ import * as Device from 'expo-device';
 export default function ExchangeScreen() {
     const { token } = useLocalSearchParams<{ token: string }>();
     const { signIn } = useAuth();
+    const theme = useTheme();
     const router = useRouter();
     const [status, setStatus] = useState<'exchanging' | 'error'>('exchanging');
 
@@ -45,9 +47,9 @@ export default function ExchangeScreen() {
 
     if (status === 'error') {
         return (
-            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32 }}>
-                <Text style={{ fontSize: 18, fontWeight: '600', marginBottom: 8 }}>Link expired</Text>
-                <Text style={{ color: '#6B7280', textAlign: 'center' }}>
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, backgroundColor: theme.colors.background }}>
+                <Text style={{ fontSize: 18, fontFamily: theme.fonts.display, color: theme.colors.text, marginBottom: 8 }}>Link expired</Text>
+                <Text style={{ color: theme.colors.textMuted, textAlign: 'center' }}>
                     This sign-in link has expired or already been used. Go back and request a new one.
                 </Text>
             </View>
@@ -55,8 +57,9 @@ export default function ExchangeScreen() {
     }
 
     return (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ color: '#6B7280' }}>Signing you in…</Text>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.background }}>
+            <ActivityIndicator color={theme.colors.primary} style={{ marginBottom: 12 }} />
+            <Text style={{ color: theme.colors.textMuted }}>Signing you in…</Text>
         </View>
     );
 }
