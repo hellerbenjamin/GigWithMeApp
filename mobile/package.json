@@ -4,6 +4,7 @@
   "main": "index.ts",
   "dependencies": {
     "@expo-google-fonts/bricolage-grotesque": "^0.4.1",
+    "@expo/vector-icons": "^15.0.2",
     "expo": "~56.0.16",
     "expo-constants": "~56.0.21",
     "expo-dev-client": "~56.0.23",

@@ -1,4 +1,5 @@
 import { useTheme } from '@/src/theme';
+import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 
 export default function TabLayout() {
@@ -20,7 +21,9 @@ export default function TabLayout() {
                 name="gigs"
                 options={{
                     title: 'Gigs',
-                    tabBarIcon: () => null,
+                    tabBarIcon: ({ color, size, focused }) => (
+                        <Ionicons name={focused ? 'calendar' : 'calendar-outline'} size={size} color={color} />
+                    ),
                 }}
             />
             {/*
@@ -32,14 +35,18 @@ export default function TabLayout() {
                 name="(band)"
                 options={{
                     title: 'Band',
-                    tabBarIcon: () => null,
+                    tabBarIcon: ({ color, size, focused }) => (
+                        <Ionicons name={focused ? 'people' : 'people-outline'} size={size} color={color} />
+                    ),
                 }}
             />
             <Tabs.Screen
                 name="profile"
                 options={{
                     title: 'Profile',
-                    tabBarIcon: () => null,
+                    tabBarIcon: ({ color, size, focused }) => (
+                        <Ionicons name={focused ? 'person-circle' : 'person-circle-outline'} size={size} color={color} />
+                    ),
                 }}
             />
         </Tabs>
