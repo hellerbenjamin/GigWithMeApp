@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Auth\MagicLinkController;
 use App\Http\Controllers\Api\Auth\LogoutController;
+use App\Http\Controllers\Api\Member\BandMemberController;
 use App\Http\Controllers\Api\Member\GigController;
 use App\Http\Controllers\Api\Member\NotificationController;
 use App\Http\Controllers\Api\Member\ProfileController;
@@ -32,6 +33,13 @@ Route::prefix('v1')->group(function () {
         Route::get('gigs', [GigController::class, 'index']);
         Route::get('gigs/{gig}', [GigController::class, 'show']);
         Route::post('gigs/{gig}/rsvp', [GigController::class, 'rsvp']);
+
+        // Band roster — listing is open to any member of the band; adding,
+        // editing roles, and removing are gated to owners/admins in the controller.
+        Route::get('bands/{band}/members', [BandMemberController::class, 'index']);
+        Route::post('bands/{band}/members', [BandMemberController::class, 'store']);
+        Route::put('bands/{band}/members/{user}', [BandMemberController::class, 'update']);
+        Route::delete('bands/{band}/members/{user}', [BandMemberController::class, 'destroy']);
 
         Route::get('profile', [ProfileController::class, 'show']);
         Route::put('profile', [ProfileController::class, 'update']);
