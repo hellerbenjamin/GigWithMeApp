@@ -26,10 +26,19 @@ function roleBadge(theme: Theme, role: MemberRole) {
 }
 
 export default function BandRosterScreen() {
-    const { token, bands } = useAuth();
+    const { token, bands, refresh } = useAuth();
     const theme = useTheme();
 
     const [bandId, setBandId] = useState<number | null>(bands[0]?.id ?? null);
+
+    // Pull the latest band membership when the tab opens, so a member added to
+    // a band after sign-in sees it without restarting.
+    useEffect(() => { refresh(); }, [refresh]);
+
+    // Adopt the first band once the (possibly refreshed) list arrives.
+    useEffect(() => {
+        if (bandId == null && bands.length > 0) setBandId(bands[0].id);
+    }, [bands, bandId]);
     const [members, setMembers] = useState<RosterMember[]>([]);
     const [roles, setRoles] = useState<RoleOption[]>([]);
     const [canManage, setCanManage] = useState(false);
@@ -66,6 +75,8 @@ export default function BandRosterScreen() {
         setCanManage(json.can_manage);
     }
 
+    const activeBand = bands.find((b) => b.id === bandId);
+
     if (bands.length === 0) {
         return (
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.colors.background, padding: 32 }}>
@@ -92,10 +103,17 @@ export default function BandRosterScreen() {
                 }
                 ListHeaderComponent={
                     <View style={{ paddingHorizontal: 20, marginBottom: 12 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <Text style={{ flex: 1, fontSize: 28, fontFamily: theme.fonts.display, color: theme.colors.text }}>
-                                Band
-                            </Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                            <View style={{ flex: 1 }}>
+                                <Text style={{ fontSize: 28, fontFamily: theme.fonts.display, color: theme.colors.text }}>
+                                    {activeBand?.name ?? 'Band'}
+                                </Text>
+                                {members.length > 0 && (
+                                    <Text style={{ color: theme.colors.textMuted, fontSize: 14, marginTop: 2 }}>
+                                        {members.length} {members.length === 1 ? 'member' : 'members'}
+                                    </Text>
+                                )}
+                            </View>
                             {canManage && (
                                 <TouchableOpacity
                                     onPress={() => { setEditing(null); setFormOpen(true); }}
