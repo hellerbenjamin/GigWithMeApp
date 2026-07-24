@@ -2,6 +2,12 @@ import { useTheme } from '@/src/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 
+// Anchor the tab group to Gigs so it's the landing screen, rather than
+// letting the router pick the alphabetically-first route (the "(band)" group).
+export const unstable_settings = {
+    initialRouteName: 'gigs',
+};
+
 export default function TabLayout() {
     const theme = useTheme();
 
