@@ -12,6 +12,23 @@ abstract class ApiController extends Controller
     {
         $token = $user->createToken($deviceName)->plainTextToken;
 
+        return response()->json([
+            'token'      => $token,
+            'token_type' => 'Bearer',
+            ...$this->identityPayload($user),
+        ]);
+    }
+
+    /**
+     * The current user and their bands — the shape the mobile app caches as its
+     * auth state. Shared by the token response (sign-in) and the /auth/me
+     * refresh so a member's band list stays current after they're added to or
+     * removed from a band.
+     *
+     * @return array{user: array<string, mixed>, bands: \Illuminate\Support\Collection}
+     */
+    protected function identityPayload(User $user): array
+    {
         $bands = $user->bands()
             ->orderBy('name')
             ->get(['bands.id', 'bands.name', 'bands.slug'])
@@ -22,10 +39,8 @@ abstract class ApiController extends Controller
                 'role' => $band->pivot->role,
             ]);
 
-        return response()->json([
-            'token'      => $token,
-            'token_type' => 'Bearer',
-            'user'       => [
+        return [
+            'user'  => [
                 'id'           => $user->id,
                 'name'         => $user->name,
                 'email'        => $user->email,
@@ -33,7 +48,7 @@ abstract class ApiController extends Controller
                 'avatar_path'  => $user->avatar_path,
                 'timezone'     => $user->timezone,
             ],
-            'bands'      => $bands,
-        ]);
+            'bands' => $bands,
+        ];
     }
 }

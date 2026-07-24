@@ -34,6 +34,8 @@ interface AuthContextValue extends AuthState {
     /** Call after a successful API login/exchange response. */
     signIn: (token: string, user: AuthUser, bands: AuthBand[]) => Promise<void>;
     signOut: () => Promise<void>;
+    /** Re-fetch the current user + bands from the server (no-op if signed out). */
+    refresh: () => Promise<void>;
     /** True if the user is owner or admin of at least one band. */
     isAdmin: boolean;
 }
@@ -49,16 +51,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     // Rehydrate from secure storage on mount.
+    // Refresh the cached identity (user + bands) from the server. Keeps the
+    // band list current after the member is added to or removed from a band,
+    // without making them sign out. Best-effort: cached state is kept on error.
+    const refreshIdentity = useCallback(async (token: string) => {
+        try {
+            const res = await apiFetch('/auth/me', { token });
+            if (!res.ok) return;
+            const { user, bands } = await res.json();
+            setState((s) => ({ ...s, user, bands }));
+            await SecureStore.setItemAsync(TOKEN_KEY, JSON.stringify({ token, user, bands }));
+        } catch {
+            // Offline or transient failure; keep the cached identity.
+        }
+    }, []);
+
+    // Rehydrate from secure storage on mount, then refresh in the background.
     useEffect(() => {
         SecureStore.getItemAsync(TOKEN_KEY).then((stored) => {
             if (stored) {
                 const { token, user, bands } = JSON.parse(stored);
                 setState({ token, user, bands, isLoading: false });
+                refreshIdentity(token);
             } else {
                 setState((s) => ({ ...s, isLoading: false }));
             }
         });
-    }, []);
+    }, [refreshIdentity]);
 
     const signIn = useCallback(async (token: string, user: AuthUser, bands: AuthBand[]) => {
         await SecureStore.setItemAsync(TOKEN_KEY, JSON.stringify({ token, user, bands }));
@@ -87,10 +106,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setState({ token: null, user: null, bands: [], isLoading: false });
     }, [state.token]);
 
+    const refresh = useCallback(async () => {
+        if (state.token) await refreshIdentity(state.token);
+    }, [state.token, refreshIdentity]);
+
     const isAdmin = state.bands.some((b) => b.role === 'owner' || b.role === 'admin');
 
     return (
-        <AuthContext.Provider value={{ ...state, signIn, signOut, isAdmin }}>
+        <AuthContext.Provider value={{ ...state, signIn, signOut, refresh, isAdmin }}>
             {children}
         </AuthContext.Provider>
     );

@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Auth\LogoutController;
 use App\Http\Controllers\Api\Member\BandMemberController;
 use App\Http\Controllers\Api\Member\GigController;
 use App\Http\Controllers\Api\Member\NotificationController;
+use App\Http\Controllers\Api\Auth\SessionController;
 use App\Http\Controllers\Api\Member\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -25,6 +26,11 @@ Route::prefix('v1')->group(function () {
 
         // Revoke the current device token.
         Route::post('logout', [LogoutController::class, 'destroy'])
+            ->middleware('auth:sanctum');
+
+        // Current identity (user + bands) — the app refreshes its cached auth
+        // state from this on launch.
+        Route::get('me', [SessionController::class, 'me'])
             ->middleware('auth:sanctum');
     });
 
