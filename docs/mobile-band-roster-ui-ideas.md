@@ -1,4 +1,4 @@
-# Mobile band roster: UI ideas
+ # Mobile band roster: UI ideas
 
 Future polish for the Band tab roster (`mobile/app/(tabs)/(band)/index.tsx`).
 Captured for later; none are committed yet beyond the band-name header and

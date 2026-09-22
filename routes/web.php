@@ -24,7 +24,9 @@ use App\Http\Middleware\HasActiveBand;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::redirect('/', '/login');
+// Public homepage — also the website we give Vonage / the carriers for A2P
+// 10DLC campaign registration, so it describes the SMS program in full.
+Route::get('/', static fn () => Inertia::render('Home'))->name('home');
 
 // Public legal pages — login-free and linked from the SMS opt-in screen; also
 // the URLs we give our SMS provider (Vonage) for A2P registration.

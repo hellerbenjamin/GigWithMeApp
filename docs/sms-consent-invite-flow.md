@@ -87,6 +87,9 @@ Done (see the SMS-provider switch + invite-flow commits):
   unticked opt-in box; submitting records consent (timestamp + the exact wording
   from `App\Support\SmsConsent::OPT_IN_TEXT`) and spends the one-time token.
 - `/privacy` and `/terms` are live and linked from the acceptance page.
+- The public homepage at `/` (`Home.vue`) is the website URL for the 10DLC
+  campaign: it describes the SMS program (opt-in steps + exact wording, sample
+  messages, frequency, rates, STOP/HELP, no sharing) and links both legal pages.
 - Covered by `tests/Feature/Invites/AcceptInviteTest` and the updated
   `BandMembers` tests.
 

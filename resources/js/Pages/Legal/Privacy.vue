@@ -15,7 +15,7 @@ const lastUpdated = 'June 3, 2026';
     <Head title="Privacy Policy · GigWithMe" />
 
     <div class="mx-auto max-w-2xl px-4 py-12 sm:py-16">
-        <Link href="/login" class="inline-flex">
+        <Link href="/" class="inline-flex">
             <GigWithMeLogo
                 class="h-8 text-stage-indigo dark:text-canvas"
                 :variant="isDark ? 'dark' : 'light'"
